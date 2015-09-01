@@ -1,0 +1,42 @@
+
+dash.name=Dash
+dash.build.mcu=cortex-m4
+dash.build.f_cpu=48000000L
+dash.build.board=DASH
+dash.build.core=arduino
+dash.build.variant=dash
+dash.build.extra_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16 -DFSL_OSA_BM_TIMER_CONFIG=2 -DCPU_MK22FN512VLH12 -DCLOCK_SETUP=16
+dash.build.ldscript=dash.ld
+dash.build.variant_system_lib=
+dash.compiler.c.elf.extra_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16
+dash.upload.tool=konektloader
+dash.upload.script=update_dash.py
+dash.upload.flags=
+
+dashpro.name=DashPro
+dashpro.build.mcu=cortex-m4
+dashpro.build.f_cpu=48000000L
+dashpro.build.board=DASHPRO
+dashpro.build.core=arduino
+dashpro.build.variant=dashpro
+dashpro.build.extra_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16 -DFSL_OSA_BM_TIMER_CONFIG=2 -DCPU_MK22FN512VLH12 -DCLOCK_SETUP=16
+dashpro.build.ldscript=dashpro.ld
+dashpro.build.variant_system_lib=
+dashpro.compiler.c.elf.extra_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16
+dashpro.upload.tool=konektloader
+dashpro.upload.script=update_dash.py
+dashpro.upload.flags=
+
+dashpro_beta.name=DashPro Beta
+dashpro_beta.build.mcu=cortex-m4
+dashpro_beta.build.f_cpu=48000000L
+dashpro_beta.build.board=DASHPRO
+dashpro_beta.build.core=arduino
+dashpro_beta.build.variant=dashpro_beta
+dashpro_beta.build.extra_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16 -DFSL_OSA_BM_TIMER_CONFIG=2 -DCPU_MK22FN512VLH12 -DCLOCK_SETUP=16
+dashpro_beta.build.ldscript=dashpro_beta.ld
+dashpro_beta.build.variant_system_lib=
+dashpro_beta.compiler.c.elf.extra_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16
+dashpro_beta.upload.tool=konektloader
+dashpro_beta.upload.script=update_dash.py
+dashpro_beta.upload.flags=
