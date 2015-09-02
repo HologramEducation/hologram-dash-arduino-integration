@@ -1,4 +1,4 @@
-dashload.name=konet.io loader
+dashload.name=konekt.io loader
 dashload.communication=USB
 dashload.protocol=
 dashload.program.protocol=
