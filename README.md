@@ -12,8 +12,8 @@ To set up the Arduino IDE environment for working with the Konekt Dash and Konek
 4. Click on `Arduino SAM Boards (32-bits ARM Cortex-M3)` and select Version `1.6.4` or later, and then click `Install` (this will install the appropriate GCC compiler tools; note that we use a Cortex-M4 series MCU, but don't let that fool you---you will still get the correct compiler tools)
 5. Copy/extract the files here in this GitHub repo into your Arduino installation's hardware folder (the `konekt.io` folder should be placed directly beneath the `hardware` folder)
 6. Exit Arduino IDE completely and restart Arduino IDE
-7. Select `Boards` > `Dash` (or `DashPro`) and start programming (see below for instructions)!
-8. Select `Tools` > `Programmer` > `konekt.io loader`
+7. Select `Boards` > `Dash` (or `DashPro`)
+8. Select `Tools` > `Programmer` > `konekt.io loader` and start programming (see below for instructions)!
 
 ## Programming Instructions
 
@@ -21,7 +21,7 @@ Contained here are instructions for programming the Dash Beta and Dash Pro Beta 
 
 ### Dash Beta programming instructions
 1. Launch Arduino IDE (version 1.6.5 or later)
-2. Select `Boards` > `Dash` (or `DashPro`) and start programming (see below for instructions)!
+2. Select `Boards` > `Dash` (or `DashPro`)
 3. Select `Tools` > `Programmer` > `konekt.io loader`
 4. Write your sketch (program) and save the sketch file (see examples)
 5. Select the `Verify` button in the Arduino IDE
@@ -29,7 +29,7 @@ Contained here are instructions for programming the Dash Beta and Dash Pro Beta 
 
 ### Dash Pro Beta programming instructions
 1. Launch Arduino IDE (version 1.6.5 or later)
-2. Select `Boards` > `Dash` (or `DashPro`) and start programming (see below for instructions)!
+2. Select `Boards` > `Dash` (or `DashPro`)
 3. Select `Tools` > `Programmer` > `konekt.io loader`
 4. Write your sketch (program) and save the sketch file (see examples)
 5. Select the `Verify` button in the Arduino IDE
