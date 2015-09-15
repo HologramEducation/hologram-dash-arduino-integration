@@ -14,4 +14,4 @@ To use:
 7. Select `Tools` > `Programmer` > `konekt.io loader`
 8. Select `Boards` > `Dash` (or `DashPro`) and start programming!
 
-Questions? Send us a support request on our website: http://konekt.io
+Questions? Chat about Dash Beta and Dash Pro Beta board experiences at: https://community.konekt.io/t/dash-beta-experiences-and-troubleshooting/75/4 
