@@ -89,4 +89,4 @@ tools.konektloader.path={runtime.platform.path}/tools
 tools.konektloader.cmd=python
 tools.konektloader.program.params.quiet=
 tools.konektloader.program.params.verbose=
-tools.konektloader.program.pattern="{cmd}" {path}/{upload.script} {upload.flags} {build.path}/{build.project_name}.bin
+tools.konektloader.program.pattern="{cmd}" "{path}/{upload.script}" {upload.flags} {build.path}/{build.project_name}.bin
