@@ -67,7 +67,7 @@ void digitalWrite( uint32_t io, uint32_t val )
 
 int digitalRead( uint32_t io )
 {
-    return ((GPIO_RD_PDIR(GPIO_PORT(io)) >> GPIO_PIN(io)) & 1U);
+  return ( (GPIO_RD_PDIR (GPIO_PORT(io)) >> IO_PIN(io)) & 1U );
 }
 
 void digitalToggle( uint32_t io )

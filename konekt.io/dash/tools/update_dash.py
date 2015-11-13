@@ -27,8 +27,21 @@ import hid
 import sys
 import argparse
 
-def update(file, block_id=0x18, reset_id=0xFC, vid=0x7722, pid=0x1200):
-    with open(file, 'rb') as f:
+g_verbose=True
+g_log_file = "konekt_loader_log.txt"
+
+def log(msg,fh=None):
+    verbose(msg)
+    if (fh != None):
+        fh.write(msg)
+        fh.write("\n")
+    
+def verbose(msg):
+    if g_verbose:
+        print msg
+    
+def update(in_file, block_id=0x18, reset_id=0xFC, vid=0x7722, pid=0x1200, log_file_handler=None):
+    with open(in_file, 'rb') as f:
         h = hid.device()
         try:
             h.open(vid, pid)
@@ -44,7 +57,7 @@ def update(file, block_id=0x18, reset_id=0xFC, vid=0x7722, pid=0x1200):
                 block[6] = (num >> 8) & 0xFF
                 n = h.write(block)
                 if n != 1089:
-                    print "block write failed"
+                    log("block write failed", log_file_handler)
                     break
                 num += 1
             block = [0]*1089
@@ -52,7 +65,7 @@ def update(file, block_id=0x18, reset_id=0xFC, vid=0x7722, pid=0x1200):
             block[4] = reset_id
             n = h.write(block)
             if n != 1089:
-                print "erase", hex(reset_id), "failed"
+                log("erase " + hex(reset_id) + " failed", log_file_handler)
         finally:
             h.close()
     
@@ -60,5 +73,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Konekt DashPro Loader')
     parser.add_argument('path', help='path to DashPro binary image')
     args = parser.parse_args()
-    update(args.path)
-    
+    f = None
+    try:
+        f = open(g_log_file,'w')
+        verbose("Output being logged to: " + g_log_file)
+    except:
+        f = None
+    update(args.path, log_file_handler=f)
+    if (f != None):
+        f.close()
+        verbose("Log file written to: " + g_log_file)
