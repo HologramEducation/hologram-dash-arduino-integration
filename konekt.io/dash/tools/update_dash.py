@@ -26,9 +26,10 @@
 import hid
 import sys
 import argparse
+import os
 
 g_verbose=True
-g_log_file = "konekt_loader_log.txt"
+g_log_file = os.path.expanduser('~') + os.path.sep + "konekt_loader_log.txt"
 
 def log(msg,fh=None):
     verbose(msg)
