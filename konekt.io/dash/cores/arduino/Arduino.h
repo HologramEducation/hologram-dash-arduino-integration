@@ -1,14 +1,14 @@
 /*
   Arduino.h - Main include file for the Arduino SDK,
   with mods for the Konekt Dash and Konekt Dash Pro
-  
+
   http://konekt.io
-  
+
   Copyright (c) 2015 Konekt, Inc.  All rights reserved.
-    
+
 
   Derived from file with original copyright notice:
-  
+
   Copyright (c) 2014 Arduino LLC.  All right reserved.
 
   This library is free software; you can redistribute it and/or
@@ -84,7 +84,7 @@ void loop( void );
 #include "delay.h"
 #include "wiring.h"
 #include "wiring_digital.h"
-// #include "wiring_analog.h"
+#include "wiring_analog.h"
 #include "wiring_shift.h"
 
 // undefine stdlib's abs if encountered

@@ -1,8 +1,8 @@
 /*
   variant.cpp
-  
+
   http://konekt.io
-    
+
   Copyright (c) 2015 Konekt, Inc.  All rights reserved.
 
   This library is free software; you can redistribute it and/or
@@ -26,19 +26,21 @@ void initVariant(void)
 {
 }
 
-Uart Serial0(UART0, kSimClockGateUart0, CLOCK_BUS*2, UART0_RX_TX_IRQn,
+Uart Serial0(UART0, kSimClockGateUart0, DEFAULT_SYSTEM_CLOCK, UART0_RX_TX_IRQn,
     IO_MAKE_PIN_MUX(PORTD_INDEX,  6, PORT_MUX_ALT3),
     IO_MAKE_PIN_MUX(PORTD_INDEX,  7, PORT_MUX_ALT3));
-Uart SerialCloud(UART1, kSimClockGateUart1, CLOCK_BUS*2, UART1_RX_TX_IRQn,
+Uart SerialCloud(UART1, kSimClockGateUart1, DEFAULT_SYSTEM_CLOCK, UART1_RX_TX_IRQn,
     IO_MAKE_PIN_MUX(PORTC_INDEX,  3, PORT_MUX_ALT3),
     IO_MAKE_PIN_MUX(PORTC_INDEX,  4, PORT_MUX_ALT3));
-Uart Serial2(UART2, kSimClockGateUart2, CLOCK_BUS, UART2_RX_TX_IRQn,
+Uart Serial2(UART2, kSimClockGateUart2, DEFAULT_BUS_CLOCK, UART2_RX_TX_IRQn,
     IO_MAKE_PIN_MUX(PORTD_INDEX,  2, PORT_MUX_ALT3),
     IO_MAKE_PIN_MUX(PORTD_INDEX,  3, PORT_MUX_ALT3));
 
 DashClass DashPro(IO_MAKE_PIN(PORTB_INDEX, 19),
                   IO_MAKE_PIN(PORTB_INDEX, 16),
-                  IO_MAKE_PIN(PORTB_INDEX, 17));
+                  IO_MAKE_PIN(PORTB_INDEX, 17),
+                  IO_MAKE_PIN(PORTC_INDEX, 5),
+                  WAKEUP_INPUT_9_RISING | WAKEUP_INPUT_9_FALLING);
 
 #ifdef __cplusplus
 extern "C"
@@ -63,6 +65,31 @@ void UART2_RX_TX_IRQHandler(void)
 void PIT0_IRQHandler(void)
 {
     DashPro.pulseInterrupt();
+}
+
+void PORTA_IRQHandler(void)
+{
+    DashPro.ioInterrupt(PORTA_INDEX);
+}
+
+void PORTB_IRQHandler(void)
+{
+    DashPro.ioInterrupt(PORTB_INDEX);
+}
+
+void PORTC_IRQHandler(void)
+{
+    DashPro.ioInterrupt(PORTC_INDEX);
+}
+
+void PORTD_IRQHandler(void)
+{
+    DashPro.ioInterrupt(PORTD_INDEX);
+}
+
+void PORTE_IRQHandler(void)
+{
+    DashPro.ioInterrupt(PORTE_INDEX);
 }
 
 #ifdef __cplusplus

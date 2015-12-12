@@ -1,13 +1,13 @@
 /*
   MK22F51212.h - Peripheral access layer for MK22F51212/similar
   family MCU, with mods for the Konekt Dash and Konekt Dash Pro
-  
+
   http://konekt.io
-  
+
   Copyright (c) 2015 Konekt, Inc.  All rights reserved.
-  
+
   Derived from file with original copyright notice:
-  
+
 ** ###################################################################
 **     Compilers:           Keil ARM C/C++ Compiler
 **                          Freescale C/C++ for Embedded ARM
@@ -638,7 +638,7 @@ typedef struct {
 #define ADC0                                     ((ADC_Type *)ADC0_BASE)
 #define ADC0_BASE_PTR                            (ADC0)
 /** Peripheral ADC1 base address */
-#define ADC1_BASE                                (0x40027000u)
+#define ADC1_BASE                                (0x400BB000u)
 /** Peripheral ADC1 base pointer */
 #define ADC1                                     ((ADC_Type *)ADC1_BASE)
 #define ADC1_BASE_PTR                            (ADC1)
@@ -9870,7 +9870,7 @@ typedef struct {
 typedef struct {
   __IO uint8_t PMPROT;                             /**< Power Mode Protection register, offset: 0x0 */
   __IO uint8_t PMCTRL;                             /**< Power Mode Control register, offset: 0x1 */
-  __IO uint8_t STOPCTRL;                           /**< Stop Control Register, offset: 0x2 */
+  __IO uint8_t VLLSCTRL;                           /**< Stop Control Register, offset: 0x2 */
   __I  uint8_t PMSTAT;                             /**< Power Mode Status register, offset: 0x3 */
 } SMC_Type, *SMC_MemMapPtr;
 
@@ -9887,7 +9887,7 @@ typedef struct {
 /* SMC - Register accessors */
 #define SMC_PMPROT_REG(base)                     ((base)->PMPROT)
 #define SMC_PMCTRL_REG(base)                     ((base)->PMCTRL)
-#define SMC_STOPCTRL_REG(base)                   ((base)->STOPCTRL)
+#define SMC_VLLSCTRL_REG(base)                   ((base)->VLLSCTRL)
 #define SMC_PMSTAT_REG(base)                     ((base)->PMSTAT)
 
 /*!
@@ -9934,19 +9934,19 @@ typedef struct {
 #define SMC_PMCTRL_RUNM_SHIFT                    5
 #define SMC_PMCTRL_RUNM_WIDTH                    2
 #define SMC_PMCTRL_RUNM(x)                       (((uint8_t)(((uint8_t)(x))<<SMC_PMCTRL_RUNM_SHIFT))&SMC_PMCTRL_RUNM_MASK)
-/* STOPCTRL Bit Fields */
-#define SMC_STOPCTRL_LLSM_MASK                   0x7u
-#define SMC_STOPCTRL_LLSM_SHIFT                  0
-#define SMC_STOPCTRL_LLSM_WIDTH                  3
-#define SMC_STOPCTRL_LLSM(x)                     (((uint8_t)(((uint8_t)(x))<<SMC_STOPCTRL_LLSM_SHIFT))&SMC_STOPCTRL_LLSM_MASK)
-#define SMC_STOPCTRL_PORPO_MASK                  0x20u
-#define SMC_STOPCTRL_PORPO_SHIFT                 5
-#define SMC_STOPCTRL_PORPO_WIDTH                 1
-#define SMC_STOPCTRL_PORPO(x)                    (((uint8_t)(((uint8_t)(x))<<SMC_STOPCTRL_PORPO_SHIFT))&SMC_STOPCTRL_PORPO_MASK)
-#define SMC_STOPCTRL_PSTOPO_MASK                 0xC0u
-#define SMC_STOPCTRL_PSTOPO_SHIFT                6
-#define SMC_STOPCTRL_PSTOPO_WIDTH                2
-#define SMC_STOPCTRL_PSTOPO(x)                   (((uint8_t)(((uint8_t)(x))<<SMC_STOPCTRL_PSTOPO_SHIFT))&SMC_STOPCTRL_PSTOPO_MASK)
+/* VLLSCTRL Bit Fields */
+#define SMC_VLLSCTRL_VLLSM_MASK                  0x7u
+#define SMC_VLLSCTRL_VLLSM_SHIFT                 0
+#define SMC_VLLSCTRL_VLLSM_WIDTH                 3
+#define SMC_VLLSCTRL_VLLSM(x)                    (((uint8_t)(((uint8_t)(x))<<SMC_VLLSCTRL_VLLSM_SHIFT))&SMC_VLLSCTRL_VLLSM_MASK)
+#define SMC_VLLSCTRL_RAM2PO_MASK                 0x10u
+#define SMC_VLLSCTRL_RAM2PO_SHIFT                4
+#define SMC_VLLSCTRL_RAM2PO_WIDTH                1
+#define SMC_VLLSCTRL_RAM2PO(x)                   (((uint8_t)(((uint8_t)(x))<<SMC_VLLSCTRL_RAM2PO_SHIFT))&SMC_VLLSCTRL_RAM2PO_MASK)
+#define SMC_VLLSCTRL_PORPO_MASK                  0x20u
+#define SMC_VLLSCTRL_PORPO_SHIFT                 5
+#define SMC_VLLSCTRL_PORPO_WIDTH                 1
+#define SMC_VLLSCTRL_PORPO(x)                    (((uint8_t)(((uint8_t)(x))<<SMC_VLLSCTRL_PORPO_SHIFT))&SMC_VLLSCTRL_PORPO_MASK)
 /* PMSTAT Bit Fields */
 #define SMC_PMSTAT_PMSTAT_MASK                   0xFFu
 #define SMC_PMSTAT_PMSTAT_SHIFT                  0

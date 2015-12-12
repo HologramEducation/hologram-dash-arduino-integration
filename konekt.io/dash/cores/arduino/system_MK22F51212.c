@@ -1,15 +1,15 @@
 /*
   system_MK22F51212.c - System frequency and oscillator setup for the
-  MK22F51212/related family MCUs, with mods for the Konekt Dash and 
+  MK22F51212/related family MCUs, with mods for the Konekt Dash and
   Konekt Dash Pro family
-  
+
   http://konekt.io
-  
+
   Copyright (c) 2015 Konekt, Inc.  All rights reserved.
-    
+
 
   Derived from file with original copyright notice:
-  
+
 ** ###################################################################
 **     Compilers:           Keil ARM C/C++ Compiler
 **                          Freescale C/C++ for Embedded ARM
@@ -111,6 +111,7 @@
    ---------------------------------------------------------------------------- */
 
 uint32_t SystemCoreClock = DEFAULT_SYSTEM_CLOCK;
+uint32_t SystemBusClock  = DEFAULT_BUS_CLOCK;
 
 /* ----------------------------------------------------------------------------
    -- SystemInit()

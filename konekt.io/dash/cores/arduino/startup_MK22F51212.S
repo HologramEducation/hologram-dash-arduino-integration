@@ -107,8 +107,8 @@ __isr_vector:
     .long   FTM0_IRQHandler                                 /* FTM0 fault, overflow and channels interrupt*/
     .long   FTM1_IRQHandler                                 /* FTM1 fault, overflow and channels interrupt*/
     .long   FTM2_IRQHandler                                 /* FTM2 fault, overflow and channels interrupt*/
-    .long   Reserved61_IRQHandler                           /* CMT? Reserved interrupt 61*/
-    .long   RTC_IRQHandler                                  /* RTC interrupt*/
+    .long   CMT_IRQHandler                                  /* CMT? Reserved interrupt 61*/
+    .long   RTC_IRQHandler                                  /* RTC alarm interrupt*/
     .long   RTC_Seconds_IRQHandler                          /* RTC seconds interrupt*/
     .long   PIT0_IRQHandler                                 /* PIT timer channel 0 interrupt*/
     .long   PIT1_IRQHandler                                 /* PIT timer channel 1 interrupt*/
@@ -412,7 +412,7 @@ DefaultISR:
     def_irq_handler    FTM0_IRQHandler
     def_irq_handler    FTM1_IRQHandler
     def_irq_handler    FTM2_IRQHandler
-    def_irq_handler    Reserved61_IRQHandler
+    def_irq_handler    CMT_IRQHandler
     def_irq_handler    RTC_IRQHandler
     def_irq_handler    RTC_Seconds_IRQHandler
     def_irq_handler    PIT0_IRQHandler

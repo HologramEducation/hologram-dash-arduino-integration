@@ -1,14 +1,14 @@
 /*
-  Uart.cpp - Implements Uart class, with mods for the 
+  Uart.cpp - Implements Uart class, with mods for the
   Konekt Dash and Konekt Dash Pro family
-  
+
   http://konekt.io
-  
+
   Copyright (c) 2015 Konekt, Inc.  All rights reserved.
-    
+
 
   Derived from file with original copyright notice:
-  
+
   Copyright (c) 2015 Arduino LLC.  All right reserved.
 
   This library is free software; you can redistribute it and/or
@@ -67,7 +67,7 @@ int Uart::read()
 void Uart::begin(uint32_t baudrate)
 {
     SIM_HAL_EnableClock(SIM, gate_name);
-    //TODO set rx and tx pin mux and port clock
+
     PORT_CLOCK_ENABLE(rx);
     PORT_CLOCK_ENABLE(tx);
     PORT_APPLY_MUX(rx);
@@ -88,21 +88,6 @@ void Uart::begin(uint32_t baudrate)
     UART_HAL_EnableTransmitter(instance);
     UART_HAL_EnableReceiver(instance);
 #endif
-
-#if 0
-    UART_HAL_Init(instance);
-
-    UART_HAL_SetBaudRate(instance, clock, baudrate);
-    UART_HAL_SetBitCountPerChar(instance, kUart8BitsPerChar);
-    UART_HAL_SetParityMode(instance, kUartParityDisabled);
-    UART_HAL_SetStopBitCount(instance, kUartOneStopBit);
-
-    UART_HAL_SetIntMode(instance, kUartIntRxDataRegFull, true);
-    NVIC_EnableIRQ(irqNumber);
-
-    UART_HAL_SetTransmitterCmd(instance, true);
-    UART_HAL_SetReceiverCmd(instance, true);
-#endif
 }
 
 void Uart::flush()
@@ -120,8 +105,17 @@ void Uart::IrqHandler()
 size_t Uart::write(const uint8_t data)
 {
 #if FSL_FEATURE_SOC_UART_COUNT
-    UART_HAL_SendDataPolling(instance, &data, 1);
+    uint32_t start = millis();
+
+    while (!UART_BRD_S1_TDRE(instance))
+    {
+        if(millis() - start > 500)
+            return 0;
+    }
+
+    UART_HAL_Putchar(instance, data);
     return 1;
 #endif
+
     return 0;
 }

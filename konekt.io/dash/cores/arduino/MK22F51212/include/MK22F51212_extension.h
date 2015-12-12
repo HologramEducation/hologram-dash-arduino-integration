@@ -1,14 +1,14 @@
 /*
-  MK22F51212_extension.h - Register access layer extensino for 
-  MK22F51212/similar family MCU, with mods for the Konekt Dash 
+  MK22F51212_extension.h - Register access layer extensino for
+  MK22F51212/similar family MCU, with mods for the Konekt Dash
   and Konekt Dash Pro
-  
+
   http://konekt.io
-  
+
   Copyright (c) 2015 Konekt, Inc.  All rights reserved.
-  
+
   Derived from file with original copyright notice:
-  
+
 ** ###################################################################
 **     Compilers:           Keil ARM C/C++ Compiler
 **                          Freescale C/C++ for Embedded ARM
@@ -31104,7 +31104,7 @@
  * Registers defined in this header file:
  * - SMC_PMPROT - Power Mode Protection register
  * - SMC_PMCTRL - Power Mode Control register
- * - SMC_STOPCTRL - Stop Control Register
+ * - SMC_VLLSCTRL - Stop Control Register
  * - SMC_PMSTAT - Power Mode Status register
  */
 
@@ -31208,26 +31208,6 @@
 #define SMC_BWR_PMPROT_AVLP(base, value) (BITBAND_ACCESS8(&SMC_PMPROT_REG(base), SMC_PMPROT_AVLP_SHIFT) = (value))
 /*@}*/
 
-/*!
- * @name Register SMC_PMPROT, field AHSRUN[7] (RW)
- *
- * Provided the appropriate control bits are set up in PMCTRL, this write-once
- * field allows the MCU to enter High Speed Run mode (HSRUN).
- *
- * Values:
- * - 0 - HSRUN is not allowed
- * - 1 - HSRUN is allowed
- */
-/*@{*/
-/*! @brief Read current value of the SMC_PMPROT_AHSRUN field. */
-#define SMC_RD_PMPROT_AHSRUN(base) ((SMC_PMPROT_REG(base) & SMC_PMPROT_AHSRUN_MASK) >> SMC_PMPROT_AHSRUN_SHIFT)
-#define SMC_BRD_PMPROT_AHSRUN(base) (BITBAND_ACCESS8(&SMC_PMPROT_REG(base), SMC_PMPROT_AHSRUN_SHIFT))
-
-/*! @brief Set the AHSRUN field to a new value. */
-#define SMC_WR_PMPROT_AHSRUN(base, value) (SMC_RMW_PMPROT(base, SMC_PMPROT_AHSRUN_MASK, SMC_PMPROT_AHSRUN(value)))
-#define SMC_BWR_PMPROT_AHSRUN(base, value) (BITBAND_ACCESS8(&SMC_PMPROT_REG(base), SMC_PMPROT_AHSRUN_SHIFT) = (value))
-/*@}*/
-
 /*******************************************************************************
  * SMC_PMCTRL - Power Mode Control register
  ******************************************************************************/
@@ -31267,9 +31247,9 @@
  * Sleep-On-Exit mode is entered with SLEEPDEEP=1 . Writes to this field are
  * blocked if the protection level has not been enabled using the PMPROT register.
  * After any system reset, this field is cleared by hardware on any successful write
- * to the PMPROT register. When set to VLLSxor LLSx, the LLSM in the STOPCTRL
+ * to the PMPROT register. When set to VLLSxor LLSx, the LLSM in the VLLSCTRL
  * register is used to further select the particular VLLSor LLS submode which will
- * be entered. When set to STOP, the PSTOPO bits in the STOPCTRL register can be
+ * be entered. When set to STOP, the PSTOPO bits in the VLLSCTRL register can be
  * used to select a Partial Stop mode if desired.
  *
  * Values:
@@ -31338,38 +31318,38 @@
 /*@}*/
 
 /*******************************************************************************
- * SMC_STOPCTRL - Stop Control Register
+ * SMC_VLLSCTRL - Stop Control Register
  ******************************************************************************/
 
 /*!
- * @brief SMC_STOPCTRL - Stop Control Register (RW)
+ * @brief SMC_VLLSCTRL - Stop Control Register (RW)
  *
  * Reset value: 0x03U
  *
- * The STOPCTRL register provides various control bits allowing the user to fine
+ * The VLLSCTRL register provides various control bits allowing the user to fine
  * tune power consumption during the stop mode selected by the STOPM field. This
  * register is reset on Chip POR not VLLS and by reset types that trigger Chip
  * POR not VLLS. It is unaffected by reset types that do not trigger Chip POR not
  * VLLS. See the Reset section details for more information.
  */
 /*!
- * @name Constants and macros for entire SMC_STOPCTRL register
+ * @name Constants and macros for entire SMC_VLLSCTRL register
  */
 /*@{*/
-#define SMC_RD_STOPCTRL(base)    (SMC_STOPCTRL_REG(base))
-#define SMC_WR_STOPCTRL(base, value) (SMC_STOPCTRL_REG(base) = (value))
-#define SMC_RMW_STOPCTRL(base, mask, value) (SMC_WR_STOPCTRL(base, (SMC_RD_STOPCTRL(base) & ~(mask)) | (value)))
-#define SMC_SET_STOPCTRL(base, value) (SMC_WR_STOPCTRL(base, SMC_RD_STOPCTRL(base) |  (value)))
-#define SMC_CLR_STOPCTRL(base, value) (SMC_WR_STOPCTRL(base, SMC_RD_STOPCTRL(base) & ~(value)))
-#define SMC_TOG_STOPCTRL(base, value) (SMC_WR_STOPCTRL(base, SMC_RD_STOPCTRL(base) ^  (value)))
+#define SMC_RD_VLLSCTRL(base)    (SMC_VLLSCTRL_REG(base))
+#define SMC_WR_VLLSCTRL(base, value) (SMC_VLLSCTRL_REG(base) = (value))
+#define SMC_RMW_VLLSCTRL(base, mask, value) (SMC_WR_VLLSCTRL(base, (SMC_RD_VLLSCTRL(base) & ~(mask)) | (value)))
+#define SMC_SET_VLLSCTRL(base, value) (SMC_WR_VLLSCTRL(base, SMC_RD_VLLSCTRL(base) |  (value)))
+#define SMC_CLR_VLLSCTRL(base, value) (SMC_WR_VLLSCTRL(base, SMC_RD_VLLSCTRL(base) & ~(value)))
+#define SMC_TOG_VLLSCTRL(base, value) (SMC_WR_VLLSCTRL(base, SMC_RD_VLLSCTRL(base) ^  (value)))
 /*@}*/
 
 /*
- * Constants & macros for individual SMC_STOPCTRL bitfields
+ * Constants & macros for individual SMC_VLLSCTRL bitfields
  */
 
 /*!
- * @name Register SMC_STOPCTRL, field LLSM[2:0] (RW)
+ * @name Register SMC_VLLSCTRL, field LLSM[2:0] (RW)
  *
  * This field controls which LLS or VLLS sub-mode to enter if STOPM=LLSx or
  * VLLSx.
@@ -31385,17 +31365,36 @@
  * - 111 - Reserved
  */
 /*@{*/
-/*! @brief Read current value of the SMC_STOPCTRL_LLSM field. */
-#define SMC_RD_STOPCTRL_LLSM(base) ((SMC_STOPCTRL_REG(base) & SMC_STOPCTRL_LLSM_MASK) >> SMC_STOPCTRL_LLSM_SHIFT)
-#define SMC_BRD_STOPCTRL_LLSM(base) (SMC_RD_STOPCTRL_LLSM(base))
+/*! @brief Read current value of the SMC_VLLSCTRL_LLSM field. */
+#define SMC_RD_VLLSCTRL_VLLSM(base) ((SMC_VLLSCTRL_REG(base) & SMC_VLLSCTRL_VLLSM_MASK) >> SMC_VLLSCTRL_VLLSM_SHIFT)
+#define SMC_BRD_VLLSCTRL_VLLSM(base) (SMC_RD_VLLSCTRL_VLLSM(base))
 
 /*! @brief Set the LLSM field to a new value. */
-#define SMC_WR_STOPCTRL_LLSM(base, value) (SMC_RMW_STOPCTRL(base, SMC_STOPCTRL_LLSM_MASK, SMC_STOPCTRL_LLSM(value)))
-#define SMC_BWR_STOPCTRL_LLSM(base, value) (SMC_WR_STOPCTRL_LLSM(base, value))
+#define SMC_WR_VLLSCTRL_VLLSM(base, value) (SMC_RMW_VLLSCTRL(base, SMC_VLLSCTRL_VLLSM_MASK, SMC_VLLSCTRL_VLLSM(value)))
+#define SMC_BWR_VLLSCTRL_VLLSM(base, value) (SMC_WR_VLLSCTRL_VLLSM(base, value))
 /*@}*/
 
 /*!
- * @name Register SMC_STOPCTRL, field PORPO[5] (RW)
+ * @name Register SMC_VLLSCTRL, field RAM2PO[4] (RW)
+ *
+ * This bit controls powering of RAM partition 2 in VLLS2 mode.
+ *
+ * Values:
+ * - 0 - RAM2 not powered in VLLS2
+ * - 1 - RAM2 powered in VLLS2
+ */
+/*@{*/
+/*! @brief Read current value of the SMC_VLLSCTRL_RAM2PO field. */
+#define SMC_RD_VLLSCTRL_RAM2PO(base) ((SMC_VLLSCTRL_REG(base) & SMC_VLLSCTRL_RAM2PO_MASK) >> SMC_VLLSCTRL_RAM2PO_SHIFT)
+#define SMC_BRD_VLLSCTRL_RAM2PO(base) (BITBAND_ACCESS8(&SMC_VLLSCTRL_REG(base), SMC_VLLSCTRL_RAM2PO_SHIFT))
+
+/*! @brief Set the RAM2PO field to a new value. */
+#define SMC_WR_VLLSCTRL_RAM2PO(base, value) (SMC_RMW_VLLSCTRL(base, SMC_VLLSCTRL_RAM2PO_MASK, SMC_VLLSCTRL_RAM2PO(value)))
+#define SMC_BWR_VLLSCTRL_RAM2PO(base, value) (BITBAND_ACCESS8(&SMC_VLLSCTRL_REG(base), SMC_VLLSCTRL_RAM2PO_SHIFT) = (value))
+/*@}*/
+
+/*!
+ * @name Register SMC_VLLSCTRL, field PORPO[5] (RW)
  *
  * This bit controls whether the POR detect circuit is enabled in VLLS0 mode.
  *
@@ -31404,39 +31403,13 @@
  * - 1 - POR detect circuit is disabled in VLLS0
  */
 /*@{*/
-/*! @brief Read current value of the SMC_STOPCTRL_PORPO field. */
-#define SMC_RD_STOPCTRL_PORPO(base) ((SMC_STOPCTRL_REG(base) & SMC_STOPCTRL_PORPO_MASK) >> SMC_STOPCTRL_PORPO_SHIFT)
-#define SMC_BRD_STOPCTRL_PORPO(base) (BITBAND_ACCESS8(&SMC_STOPCTRL_REG(base), SMC_STOPCTRL_PORPO_SHIFT))
+/*! @brief Read current value of the SMC_VLLSCTRL_PORPO field. */
+#define SMC_RD_VLLSCTRL_PORPO(base) ((SMC_VLLSCTRL_REG(base) & SMC_VLLSCTRL_PORPO_MASK) >> SMC_VLLSCTRL_PORPO_SHIFT)
+#define SMC_BRD_VLLSCTRL_PORPO(base) (BITBAND_ACCESS8(&SMC_VLLSCTRL_REG(base), SMC_VLLSCTRL_PORPO_SHIFT))
 
 /*! @brief Set the PORPO field to a new value. */
-#define SMC_WR_STOPCTRL_PORPO(base, value) (SMC_RMW_STOPCTRL(base, SMC_STOPCTRL_PORPO_MASK, SMC_STOPCTRL_PORPO(value)))
-#define SMC_BWR_STOPCTRL_PORPO(base, value) (BITBAND_ACCESS8(&SMC_STOPCTRL_REG(base), SMC_STOPCTRL_PORPO_SHIFT) = (value))
-/*@}*/
-
-/*!
- * @name Register SMC_STOPCTRL, field PSTOPO[7:6] (RW)
- *
- * These bits control whether a Partial Stop mode is entered when STOPM=STOP.
- * When entering a Partial Stop mode from RUN mode, the PMC, MCG and flash remain
- * fully powered, allowing the device to wakeup almost instantaneously at the
- * expense of higher power consumption. In PSTOP2, only system clocks are gated
- * allowing peripherals running on bus clock to remain fully functional. In PSTOP1,
- * both system and bus clocks are gated.
- *
- * Values:
- * - 00 - STOP - Normal Stop mode
- * - 01 - PSTOP1 - Partial Stop with both system and bus clocks disabled
- * - 10 - PSTOP2 - Partial Stop with system clock disabled and bus clock enabled
- * - 11 - Reserved
- */
-/*@{*/
-/*! @brief Read current value of the SMC_STOPCTRL_PSTOPO field. */
-#define SMC_RD_STOPCTRL_PSTOPO(base) ((SMC_STOPCTRL_REG(base) & SMC_STOPCTRL_PSTOPO_MASK) >> SMC_STOPCTRL_PSTOPO_SHIFT)
-#define SMC_BRD_STOPCTRL_PSTOPO(base) (SMC_RD_STOPCTRL_PSTOPO(base))
-
-/*! @brief Set the PSTOPO field to a new value. */
-#define SMC_WR_STOPCTRL_PSTOPO(base, value) (SMC_RMW_STOPCTRL(base, SMC_STOPCTRL_PSTOPO_MASK, SMC_STOPCTRL_PSTOPO(value)))
-#define SMC_BWR_STOPCTRL_PSTOPO(base, value) (SMC_WR_STOPCTRL_PSTOPO(base, value))
+#define SMC_WR_VLLSCTRL_PORPO(base, value) (SMC_RMW_VLLSCTRL(base, SMC_VLLSCTRL_PORPO_MASK, SMC_VLLSCTRL_PORPO(value)))
+#define SMC_BWR_VLLSCTRL_PORPO(base, value) (BITBAND_ACCESS8(&SMC_VLLSCTRL_REG(base), SMC_VLLSCTRL_PORPO_SHIFT) = (value))
 /*@}*/
 
 /*******************************************************************************

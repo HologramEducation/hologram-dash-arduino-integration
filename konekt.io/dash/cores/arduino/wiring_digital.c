@@ -1,12 +1,12 @@
 /*
   wiring_digital.c - Wiring compatibility layer digital-mode
   functions with mods for Konekt Dash and Konekt Dash Pro
-  
+
   http://konekt.io
-  
+
   Copyright (c) 2015 Konekt, Inc.  All rights reserved.
 
-    
+
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
   License as published by the Free Software Foundation; either
@@ -30,9 +30,7 @@
 
 void pinMode( uint32_t io, uint32_t mode )
 {
-    // if(ulPin > PINS_COUNT)
-    //     return;
-
+    if(!IO_VALID(io)) return;
     //enable port clock
     PORT_CLOCK_ENABLE(io);
 
@@ -59,6 +57,7 @@ void pinMode( uint32_t io, uint32_t mode )
 
 void digitalWrite( uint32_t io, uint32_t val )
 {
+    if(!IO_VALID(io)) return;
     if(val == LOW)
         GPIO_WR_PCOR(GPIO_PORT(io), GPIO_PIN(io));
     else
@@ -67,11 +66,13 @@ void digitalWrite( uint32_t io, uint32_t val )
 
 int digitalRead( uint32_t io )
 {
-  return ( (GPIO_RD_PDIR (GPIO_PORT(io)) >> IO_PIN(io)) & 1U );
+    if(!IO_VALID(io)) return 0;
+    return ((GPIO_RD_PDIR(GPIO_PORT(io)) >> IO_PIN(io)) & 1U);
 }
 
 void digitalToggle( uint32_t io )
 {
+    if(!IO_VALID(io)) return;
     GPIO_WR_PTOR(GPIO_PORT(io), GPIO_PIN(io));
 }
 
