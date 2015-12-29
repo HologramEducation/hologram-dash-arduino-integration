@@ -102,7 +102,7 @@
  */
 
 #include <stdint.h>
-#include "fsl_device_registers.h"
+#include "hal/fsl_device_registers.h"
 
 
 

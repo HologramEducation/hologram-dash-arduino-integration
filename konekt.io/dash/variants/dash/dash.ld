@@ -26,8 +26,8 @@
 /* Entry Point */
 ENTRY(Reset_Handler)
 
-HEAP_SIZE  = DEFINED(__heap_size__)  ? __heap_size__  : 0x00;
-STACK_SIZE = DEFINED(__stack_size__) ? __stack_size__ : 0x0400;
+HEAP_SIZE  = DEFINED(__heap_size__)  ? __heap_size__  : 0x4000;
+STACK_SIZE = DEFINED(__stack_size__) ? __stack_size__ : 0x1000;
 /* Specify the memory areas */
 MEMORY {
   m_interrupts          (RX)  : ORIGIN = 0x00008000, LENGTH = 0x00000400
@@ -136,7 +136,7 @@ SECTIONS
     KEEP (*(.fini_array*))
     PROVIDE_HIDDEN (__fini_array_end = .);
   } > m_text
- 
+
   __etext = .;    /* define a global symbol at end of code */
   __DATA_ROM = .; /* Symbol is used by startup for data initialization */
 
@@ -151,7 +151,7 @@ SECTIONS
     . = ALIGN(4);
     __data_end__ = .;        /* define a global symbol at data end */
   } > m_data
-  
+
   /* Symbol is used by startup for data initialization */
   __DATA_END = __DATA_ROM + (__data_end__ - __data_start__);
 
@@ -161,11 +161,11 @@ SECTIONS
      . = ALIGN(4);
      __m_interrupts_ram_RAMStart = .;
      *(.m_interrupts_ram)    /* This is an User defined section */
-    . += 0x0400; 
+    . += 0x0400;
      __m_interrupts_ram_RAMEnd = .;
      . = ALIGN(4);
   } > m_interrupts_ram
-  __m_interrupts_ram_ROMSize = __m_interrupts_ram_RAMEnd - __m_interrupts_ram_RAMStart;          
+  __m_interrupts_ram_ROMSize = __m_interrupts_ram_RAMEnd - __m_interrupts_ram_RAMStart;
   __RAM_VECTOR_TABLE_SIZE_BYTES = __m_interrupts_ram_RAMEnd - __m_interrupts_ram_RAMStart;
   __m_data_2_ROMStart = __m_interrupts_ram_ROMStart + SIZEOF(.m_interrupts_ram);
   .m_data_2 : AT(__m_data_2_ROMStart)
@@ -176,7 +176,7 @@ SECTIONS
      __m_data_2_RAMEnd = .;
      . = ALIGN(4);
   } > m_data_2
-  __m_data_2_ROMSize = __m_data_2_RAMEnd - __m_data_2_RAMStart;          
+  __m_data_2_ROMSize = __m_data_2_RAMEnd - __m_data_2_RAMStart;
   /* Uninitialized data section */
   .bss :
   {
@@ -191,7 +191,7 @@ SECTIONS
     __bss_end__ = .;
     __END_BSS = .;
   } > m_data
-  
+
   .heap :
   {
     . = ALIGN(8);

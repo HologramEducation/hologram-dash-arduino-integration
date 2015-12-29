@@ -23,7 +23,7 @@
 */
 
 #include "Dash.h"
-#include "fsl_pit_hal.h"
+#include "hal/fsl_pit_hal.h"
 
 #include "Arduino.h"
 
@@ -188,6 +188,15 @@ void DashClass::lls(uint32_t wakeUpPins, bool halt)
     SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;    //Stop mode on WFI
     __WFI();
     SystemInit();
+}
+
+String DashClass::bootVersion()
+{
+    char buff[5];
+    memcpy(buff, (char*)0x418, 4);
+    buff[4] = 0;
+    String str(buff);
+    return str;
 }
 
 #ifdef __cplusplus

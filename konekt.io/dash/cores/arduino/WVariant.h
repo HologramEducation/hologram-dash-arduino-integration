@@ -24,7 +24,7 @@
 #pragma once
 
 #include <stdint.h>
-#include "fsl_device_registers.h"
+#include "hal/fsl_device_registers.h"
 #include "wiring_constants.h"
 
 #define SPI_INSTANCE    SPI0

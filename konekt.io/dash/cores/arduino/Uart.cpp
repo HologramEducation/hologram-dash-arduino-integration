@@ -28,7 +28,7 @@
 
 #include "Uart.h"
 #include "Arduino.h"
-#include "fsl_uart_hal.h"
+#include "hal/fsl_uart_hal.h"
 
 Uart::Uart(UART_Type * instance, sim_clock_gate_name_t gate_name, uint32_t clock,
     IRQn_Type irqNumber, uint32_t rx, uint32_t tx)

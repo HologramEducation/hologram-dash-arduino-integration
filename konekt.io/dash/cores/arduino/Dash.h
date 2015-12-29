@@ -24,8 +24,9 @@
 
 #pragma once
 
-#include "fsl_device_registers.h"
+#include "hal/fsl_device_registers.h"
 #include "wiring_digital.h"
+#include "WString.h"
 
 #include <cstddef>
 
@@ -65,6 +66,9 @@ public:
     void ioInterrupt(uint32_t port);
 
     //TODO Boot Version? Read from flash
+    int bootVersionNumber() {return *((uint32_t*)0x418);}
+    String bootVersion();
+
 protected:
     uint32_t led;
     uint32_t en_5v;

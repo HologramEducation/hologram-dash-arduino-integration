@@ -4,3 +4,10 @@ dashload.protocol=
 dashload.program.protocol=
 dashload.program.tool=konektloader
 dashload.program.extra_params=
+
+dashotaload.name=konekt.io OTA programmer
+dashotaload.communication=OTA
+dashotaload.protocol=
+dashotaload.program.protocol=
+dashotaload.program.tool=konektotaloader
+dashotaload.program.extra_params=

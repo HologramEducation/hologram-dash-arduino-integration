@@ -1,14 +1,14 @@
 /*
-  Uart.h - Implements Uart class, with mods for the 
+  Uart.h - Implements Uart class, with mods for the
   Konekt Dash and Konekt Dash Pro family
-  
+
   http://konekt.io
-  
+
   Copyright (c) 2015 Konekt, Inc.  All rights reserved.
-    
+
 
   Derived from file with original copyright notice:
-  
+
   Copyright (c) 2015 Arduino LLC.  All right reserved.
 
   This library is free software; you can redistribute it and/or
@@ -30,7 +30,7 @@
 
 #include "RingBuffer.h"
 #include "Stream.h"
-#include "fsl_device_registers.h"
+#include "hal/fsl_device_registers.h"
 
 #include <cstddef>
 

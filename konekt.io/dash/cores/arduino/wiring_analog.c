@@ -24,7 +24,7 @@
 
 #include "Arduino.h"
 #include "wiring_constants.h"
-#include "fsl_adc16_hal.h"
+#include "hal/fsl_adc16_hal.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -106,7 +106,7 @@ static bool analogCalibrate(ADC_Type* adc)
 uint32_t analogRead( uint32_t ulPin )
 {
     if(!IO_ANALOG(ulPin)) return 0;
-    
+
     ADC_Type* adc = ADC0;
     sim_clock_gate_name_t gate_name = kSimClockGateAdc0;
     bool *calibrated = &_calibrated0;

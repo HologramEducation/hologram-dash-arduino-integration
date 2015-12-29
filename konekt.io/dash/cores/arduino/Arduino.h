@@ -51,7 +51,7 @@ typedef uint16_t word;
 extern "C"{
 #endif // __cplusplus
 
-#include "fsl_device_registers.h"
+#include "hal/fsl_device_registers.h"
 
 #include "wiring_constants.h"
 
@@ -76,6 +76,7 @@ void loop( void );
 #include "WVariant.h"
 #include "WString.h"
 #include "WMath.h"
+#include "usb/SerialCDC.h"
 
 #endif // __cplusplus
 

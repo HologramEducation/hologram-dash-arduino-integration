@@ -12,20 +12,20 @@ compiler.warning_flags.all=-Wall -Wextra
 
 compiler.path={runtime.tools.arm-none-eabi-gcc.path}/bin/
 compiler.c.cmd=arm-none-eabi-gcc
-compiler.c.flags=-mcpu={build.mcu} -mthumb -c -g -Os {compiler.warning_flags} -ffunction-sections -fdata-sections -nostdlib --param max-inline-insns-single=500 -MMD
+compiler.c.flags=-mcpu={build.mcu} -mthumb -c -g -Os {compiler.warning_flags} -ffunction-sections -fdata-sections -nostdlib --param max-inline-insns-single=500 -MMD -std=c99 -DFSL_OSA_BM_TIMER_CONFIG=2
 compiler.c.elf.cmd=arm-none-eabi-gcc
 compiler.c.elf.flags=-Os -Wl,--gc-sections -save-temps
 compiler.S.cmd=arm-none-eabi-gcc
 compiler.S.flags=-c -g -x assembler-with-cpp
 compiler.cpp.cmd=arm-none-eabi-g++
-compiler.cpp.flags=-mcpu={build.mcu} -mthumb -c -g -Os {compiler.warning_flags} -ffunction-sections -fdata-sections -fno-threadsafe-statics -nostdlib --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -MMD
+compiler.cpp.flags=-mcpu={build.mcu} -mthumb -c -g -Os {compiler.warning_flags} -ffunction-sections -fdata-sections -fno-threadsafe-statics -nostdlib --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -MMD -std=c99
 compiler.ar.cmd=arm-none-eabi-ar
 compiler.ar.flags=rcs
 compiler.objcopy.cmd=arm-none-eabi-objcopy
 compiler.objcopy.eep.flags=-O ihex -j .eeprom --set-section-flags=.eeprom=alloc,load --no-change-warnings --change-section-lma .eeprom=0
 compiler.elf2hex.flags=-O binary
 compiler.elf2hex.cmd=arm-none-eabi-objcopy
-compiler.ldflags=-mcpu={build.mcu} -mthumb -Wl,--cref -Wl,--check-sections -Wl,--gc-sections -Wl,--unresolved-symbols=report-all -Wl,--warn-common -Wl,--warn-section-align
+compiler.ldflags=-mcpu={build.mcu} -mthumb -Wl,--cref -Wl,--check-sections -Wl,--gc-sections -Wl,--unresolved-symbols=report-all -Wl,--warn-common
 compiler.size.cmd=arm-none-eabi-size
 compiler.define=-DARDUINO=
 
@@ -85,8 +85,14 @@ recipe.size.regex=\.text\s+([0-9]+).*
 # Uploader tools
 # --------------
 
-tools.konektloader.path={runtime.platform.path}/tools
+tools.konektloader.path={runtime.platform.path}/tools/update_dash.py
 tools.konektloader.cmd=python
 tools.konektloader.program.params.quiet=
 tools.konektloader.program.params.verbose=
-tools.konektloader.program.pattern="{cmd}" "{path}/{upload.script}" {upload.flags} {build.path}/{build.project_name}.bin
+tools.konektloader.program.pattern="{cmd}" "{path}" {upload.flags} {build.path}/{build.project_name}.bin
+
+tools.konektotaloader.path={runtime.platform.path}/tools/otaupdater.py
+tools.konektotaloader.cmd=python
+tools.konektotaloader.program.params.quiet=
+tools.konektotaloader.program.params.verbose=
+tools.konektotaloader.program.pattern="{cmd}" "{path}" {upload.flags} --imagefile {build.path}/{build.project_name}.bin
