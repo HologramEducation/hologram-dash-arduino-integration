@@ -1,10 +1,10 @@
-# konekt-dash-arduino-integration
-Files necessary to add Konekt Dash and Konekt Dash Pro boards to the Arduino IDE
+# hologram-dash-arduino-integration
+Files necessary to add Hologram Dash and Hologram Dash Pro boards to the Arduino IDE
 
 Needs Arduino IDE version 1.6.5 and up.
 
 ## Installation
-**To set up the Arduino IDE environment for working with the Konekt Dash and Konekt Dash Pro boards, please see our tutorial here: https://content.konekt.io/tutorials/hardware/konekt-dash/getting-started/**
+**To set up the Arduino IDE environment for working with the Hologram Dash and Hologram Dash Pro boards, please see our tutorial here: https://content.konekt.io/tutorials/hardware/konekt-dash/getting-started/**
 
 In summary:
 
@@ -26,13 +26,13 @@ Contained here are instructions for programming the Dash Beta and Dash Pro Beta 
 3. Select `Tools` > `Programmer`, and select `konekt.io loader` (for USB programming) or `konekt.io OTA programmer` (for over-the-air cellular programming) 
 4. Write your sketch (program) and save the sketch file (see examples)
 5. Select the `Verify` button in the Arduino IDE
-6. **If programming via USB:** power-cycle the Konekt Dash (places it in programming mode) and select `Upload` in the Arduino IDE within 10 seconds of power-cycling (the Konekt Dash will flash with a two-blink heartbeat pattern while in programming mode, and will timeout if no program upload begins)
+6. **If programming via USB:** power-cycle the Hologram Dash (places it in programming mode) and select `Upload` in the Arduino IDE within 10 seconds of power-cycling (the Hologram Dash will flash with a two-blink heartbeat pattern while in programming mode, and will timeout if no program upload begins)
 6. **If programming over-the-air via cellular:** For over-the-air (OTA) programming, the Dash MUST NOT be placed into USB programming mode using the PGM button. Instead, simply select `Upload` and follow the on-screen instructions. Your API key can be obtained from: https://dashboard.konekt.io/apikey
 
 
 ## For more information
-Example Arduino sketches can be found at: https://github.com/konektlabs/konekt-dash-arduino-examples
+Example Arduino sketches can be found at: https://github.com/hologram-io/hologram-dash-arduino-examples
 
 Check out our tutorial: https://content.konekt.io/tutorials/hardware/konekt-dash/getting-started/
 
-Questions? Browse answers or ask a question at: https://community.konekt.io
+Questions? Browse answers or ask a question at: https://community.hologram.io
