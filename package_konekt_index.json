@@ -1,0 +1,238 @@
+{
+    "packages": [
+    {
+        "name":"konekt",
+        "maintainer":"Hologram (Formerly Konekt)",
+        "websiteURL":"https://hologram.io",
+        "email":"support@hologram.io",
+        "platforms":[
+        {
+            "name": "Konekt Dash/Dash Pro Boards",
+            "architecture": "sam",
+            "version": "0.9.0",
+            "category": "Contributed",
+            "help": {
+                "online": "https://hologram.io/docs/hardware/hologram-dash/"
+            },
+            "url":"http://downloads.konekt.io/dash/arduino_integration/konektdash-0.9.0.tar.bz2",
+            "archiveFileName":"konektdash-0.9.0.tar.bz2",
+            "checksum":"SHA-256:69b5a840f2bdcb7ab487500a39211aaac6024d832e0906cdc0d3d3d61697c17d",
+            "size":"486804",
+            "boards":[
+                { "name":"Konekt Dash"},
+                { "name":"Konekt Dash Pro"}
+            ],
+                "toolsDependencies":[
+                    {
+                        "packager": "arduino",
+                        "name": "arm-none-eabi-gcc",
+                        "version": "4.8.3-2014q1"
+                    },
+                    {
+                        "packager": "konekt",
+                        "name": "dashupdater",
+                        "version": "0.7.0"
+                    }
+                ]
+        },
+        {
+            "name": "Konekt Dash/Dash Pro Boards",
+            "architecture": "sam",
+            "version": "0.7.2",
+            "category": "Contributed",
+            "help": {
+                "online": "https://content.konekt.io/docs/"
+            },
+            "url":"http://downloads.konekt.io/dash/arduino_integration/konektdash-0.7.2.tar.bz2",
+            "archiveFileName":"konektdash-0.7.2.tar.bz2",
+            "checksum":"SHA-256:80b2243ba13d4aee65bdac6ddce3ae06beed205bfc2da209fb86c0ba5f98d53b",
+            "size":"479535",
+            "boards":[
+                { "name":"Konekt Dash"},
+                { "name":"Konekt Dash Pro"}
+            ],
+                "toolsDependencies":[
+                    {
+                        "packager": "arduino",
+                        "name": "arm-none-eabi-gcc",
+                        "version": "4.8.3-2014q1"
+                    },
+                    {
+                        "packager": "konekt",
+                        "name": "dashupdater",
+                        "version": "0.6.2"
+                    }
+                ]
+        },
+        {
+            "name": "Konekt Dash/Dash Pro Boards",
+            "architecture": "sam",
+            "version": "0.7.1",
+            "category": "Contributed",
+            "help": {
+                "online": "https://content.konekt.io/docs/"
+            },
+            "url":"http://downloads.konekt.io/dash/arduino_integration/konektdash-0.7.1.tar.bz2",
+            "archiveFileName":"konektdash-0.7.1.tar.bz2",
+            "checksum":"SHA-256:72434381ae96b3be3b6ab75d9d70d862156248ddc69a17be4c96b8aaf0c168de",
+            "size":"478667",
+            "boards":[
+                { "name":"Konekt Dash"},
+                { "name":"Konekt Dash Pro"}
+            ],
+                "toolsDependencies":[
+                    {
+                        "packager": "arduino",
+                        "name": "arm-none-eabi-gcc",
+                        "version": "4.8.3-2014q1"
+                    },
+                    {
+                        "packager": "konekt",
+                        "name": "dashupdater",
+                        "version": "0.6.1"
+                    }
+                ]
+        },
+        {
+            "name": "Konekt Dash/Dash Pro Boards",
+            "architecture": "sam",
+            "version": "0.7",
+            "category": "Contributed",
+            "help": {
+                "online": "https://content.konekt.io/docs/"
+            },
+            "url":"http://downloads.konekt.io/dash/arduino_integration/konektdash-0.7.tar.bz2",
+            "archiveFileName":"konektdash-0.7.tar.bz2",
+            "checksum":"SHA-256:6275fddd1849d79e0ed97deb75944eae8bbaf1216afb22386b3ab7fb126a60ba",
+            "size":"464771",
+            "boards":[
+                { "name":"Konekt Dash"},
+                { "name":"Konekt Dash Pro"}
+            ],
+                "toolsDependencies":[
+                    {
+                        "packager": "arduino",
+                        "name": "arm-none-eabi-gcc",
+                        "version": "4.8.3-2014q1"
+                    },
+                    {
+                        "packager": "konekt",
+                        "name": "dashupdater",
+                        "version": "0.6"
+                    }
+                ]
+        }
+        ],
+            "tools":[
+                {
+                    "name":"dashupdater",
+                    "version":"0.7.0",
+                    "systems": [
+                    {
+                        "host": "x86_64-linux-gnu",
+                        "url": "http://downloads.konekt.io/dash/updater/dashupdater-0.7.0-x86_64-pc-linux-gnu.tar.bz2",
+                        "archiveFileName": "dashupdater-0.7.0-x86_64-pc-linux-gnu.tar.bz2",
+                        "size": "9491265",
+                        "checksum": "SHA-256:1913af2b905537637ed77cb06baec37d77dd5ae14ff9fcabcc534e831123a8e3"
+                    },
+                    {
+                        "host": "i686-mingw32",
+                        "url": "http://downloads.konekt.io/dash/updater/dashupdater-0.7.0-i686-mingw32.tar.bz2",
+                        "archiveFileName": "dashupdater-0.7.0-i686-mingw32.tar.bz2",
+                        "size": "9241425",
+                        "checksum": "SHA-256:ee1f0dd3bda8ee802e79895088349bdee2c0044b233bdec274303b9f9e096ab8"
+                    },
+                    {
+                        "host": "x86_64-apple-darwin",
+                        "url": "http://downloads.konekt.io/dash/updater/dashupdater-0.7.0-x86_64-apple-darwin.tar.bz2",
+                        "archiveFileName": "dashupdater-0.7.0-x86_64-apple-darwin.tar.bz2",
+                        "size": "5477773",
+                        "checksum": "SHA-256:e866c9df5a983258a8a034014d2ed4f048c6e16c1b5ceedd1ba689a1d685ab06"
+                    }
+                    ]
+                },
+                {
+                    "name":"dashupdater",
+                    "version":"0.6.2",
+                    "systems": [
+                    {
+                        "host": "x86_64-linux-gnu",
+                        "url": "http://downloads.konekt.io/dash/updater/dashupdater-0.6.2-x86_64-pc-linux-gnu.tar.bz2",
+                        "archiveFileName": "dashupdater-0.6.2-x86_64-pc-linux-gnu.tar.bz2",
+                        "size": "9544304",
+                        "checksum": "SHA-256:160e0a5b1589d5ae5a9b5c0bc82512c3e940be858014ea4dafac3f6ef03eaad8"
+                    },
+                    {
+                        "host": "i686-mingw32",
+                        "url": "http://downloads.konekt.io/dash/updater/dashupdater-0.6.2-i686-mingw32.tar.bz2",
+                        "archiveFileName": "dashupdater-0.6.2-i686-mingw32.tar.bz2",
+                        "size": "7616729",
+                        "checksum": "SHA-256:7cf8c8bc2eceea7c85775f9894b371e319643cd75e786ccf81e0d1f747850962"
+                    },
+                    {
+                        "host": "x86_64-apple-darwin",
+                        "url": "http://downloads.konekt.io/dash/updater/dashupdater-0.6.2-x86_64-apple-darwin.tar.bz2",
+                        "archiveFileName": "dashupdater-0.6.2-x86_64-apple-darwin.tar.bz2",
+                        "size": "5279635",
+                        "checksum": "SHA-256:5b1bfa840ed271fdea2778595ec85d9b8a7d9af77eed495ab6e29880b12893f1"
+                    }
+                    ]
+                },
+                {
+                    "name":"dashupdater",
+                    "version":"0.6.1",
+                    "systems": [
+                    {
+                        "host": "x86_64-linux-gnu",
+                        "url": "http://downloads.konekt.io/dash/updater/dashupdater-0.6.1-x86_64-pc-linux-gnu.tar.bz2",
+                        "archiveFileName": "dashupdater-0.6.1-x86_64-pc-linux-gnu.tar.bz2",
+                        "size": "9544420",
+                        "checksum": "SHA-256:02ad6fd093ea7dafb6f6106428600bbaf20c22550c63e1537026d89e66897791"
+                    },
+                    {
+                        "host": "i686-mingw32",
+                        "url": "http://downloads.konekt.io/dash/updater/dashupdater-0.6.1-i686-mingw32.tar.bz2",
+                        "archiveFileName": "dashupdater-0.6.1-i686-mingw32.tar.bz2",
+                        "size": "7616595",
+                        "checksum": "SHA-256:8881484bc86d1ecc60e6d55784767a01f794e92b94b43b828c809b2c3019137c"
+                    },
+                    {
+                        "host": "x86_64-apple-darwin",
+                        "url": "http://downloads.konekt.io/dash/updater/dashupdater-0.6.1-x86_64-apple-darwin.tar.bz2",
+                        "archiveFileName": "dashupdater-0.6.1-x86_64-apple-darwin.tar.bz2",
+                        "size": "5279729",
+                        "checksum": "SHA-256:d0e567673c0cd78bca0e470ec1d6fa14e2963c917789ef791372fa603623e461"
+                    }
+                    ]
+                },
+                {
+                    "name":"dashupdater",
+                    "version":"0.6",
+                    "systems": [
+                    {
+                        "host": "x86_64-linux-gnu",
+                        "url": "http://downloads.konekt.io/dash/updater/dashupdater-0.6-x86_64-pc-linux-gnu.tar.bz2",
+                        "archiveFileName": "dashupdater-0.6-x86_64-pc-linux-gnu.tar.bz2",
+                        "size": "9543702",
+                        "checksum": "SHA-256:bfacc6f3ab496680bdfd9de40dea121d6a51976f4774254c4f3626d819560434"
+                    },
+                    {
+                        "host": "i686-mingw32",
+                        "url": "http://downloads.konekt.io/dash/updater/dashupdater-0.6-i686-mingw32.tar.bz2",
+                        "archiveFileName": "dashupdater-0.6-i686-mingw32.tar.bz2",
+                        "size": "7616361",
+                        "checksum": "SHA-256:823826f5b98521b0682a0bb9ba5f9b3b22db623aee3123840911a07afed2d0d8"
+                    },
+                    {
+                        "host": "x86_64-apple-darwin",
+                        "url": "http://downloads.konekt.io/dash/updater/dashupdater-0.6-x86_64-apple-darwin.tar.bz2",
+                        "archiveFileName": "dashupdater-0.6-x86_64-apple-darwin.tar.bz2",
+                        "size": "5279675",
+                        "checksum": "SHA-256:6f52852a297472270da7726c3217aa806f37f7c5d938a3450b5f5cd802cb6253"
+                    }
+                    ]
+                }
+            ]
+    }
+    ]
+}
