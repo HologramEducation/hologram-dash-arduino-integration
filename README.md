@@ -16,7 +16,7 @@ In summary:
 6. Select the entry for `Konekt` and then select `Install`
 
 ## Programming Instructions
-**Please see our tutorial here: https://content.konekt.io/tutorials/hardware/konekt-dash/getting-started/**
+**Please see documentation here: https://hologram.io/docs/hardware/hologram-dash/**
 
 Contained here are instructions for programming the Dash Beta and Dash Pro Beta via Arduino IDE and USB. Be sure to complete the installation instructions (above) first.
 
@@ -27,7 +27,7 @@ Contained here are instructions for programming the Dash Beta and Dash Pro Beta 
 4. Write your sketch (program) and save the sketch file (see examples)
 5. Select the `Verify` button in the Arduino IDE
 6. **If programming via USB:** power-cycle the Hologram Dash (places it in programming mode) and select `Upload` in the Arduino IDE within 10 seconds of power-cycling (the Hologram Dash will flash with a two-blink heartbeat pattern while in programming mode, and will timeout if no program upload begins)
-6. **If programming over-the-air via cellular:** For over-the-air (OTA) programming, the Dash MUST NOT be placed into USB programming mode using the PGM button. Instead, simply select `Upload` and follow the on-screen instructions. Your API key can be obtained from: https://dashboard.konekt.io/apikey
+6. **If programming over-the-air via cellular:** For over-the-air (OTA) programming, the Dash MUST NOT be placed into USB programming mode using the PGM button. Instead, simply select `Upload` and follow the on-screen instructions. Your API key can be obtained from: https://dashboard.hologram.io/apikey
 
 
 ## For more information
