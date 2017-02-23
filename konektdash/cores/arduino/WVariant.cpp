@@ -122,18 +122,25 @@ extern const PinDescription g_APinDescription[]=
 };
 
 Uart Serial0(UART0, kSimClockGateUart0, DEFAULT_SYSTEM_CLOCK, UART0_RX_TX_IRQn, 0, 1);
-Uart SerialCloud(UART1, kSimClockGateUart1, DEFAULT_SYSTEM_CLOCK, UART1_RX_TX_IRQn, 21, 22);
+Uart SerialSystem(UART1, kSimClockGateUart1, DEFAULT_SYSTEM_CLOCK, UART1_RX_TX_IRQn, 21, 22);
 Uart Serial2(UART2, kSimClockGateUart2, DEFAULT_BUS_CLOCK, UART2_RX_TX_IRQn, 11, 12);
 
 TwoWire WireInternal(I2C0, kSimClockGateI2c0, DEFAULT_BUS_CLOCK, I2C0_IRQn, 27, 28);
 TwoWire Wire(I2C1, kSimClockGateI2c1, DEFAULT_BUS_CLOCK, I2C1_IRQn, 14, 15);
 
-DashClass Dash(WireInternal);
+DashClass Dash;
+ClockClass Clock;
+Max1704x FuelGauge;
+DashCharger Charger(FuelGauge);
+Hologram HologramCloud;
+SerialCloudClass SerialCloud;
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif // __cplusplus
+
+void __cxa_pure_virtual() { while (1); }
 
 void UART0_RX_TX_IRQHandler(void)
 {
@@ -143,7 +150,7 @@ void UART0_RX_TX_IRQHandler(void)
 
 void UART1_RX_TX_IRQHandler(void)
 {
-    SerialCloud.IrqHandler();
+    SerialSystem.IrqHandler();
     Dash.wakeFromSleep();
 }
 
@@ -160,7 +167,17 @@ void PIT0_IRQHandler(void)
 
 void PIT1_IRQHandler(void)
 {
-    Dash.wakeFromSnooze();
+    Dash.timerExpired(1);
+}
+
+void PIT2_IRQHandler(void)
+{
+    Dash.timerExpired(2);
+}
+
+void PIT3_IRQHandler(void)
+{
+    Charger.minuteInterrupt();
 }
 
 void PORTA_IRQHandler(void)
@@ -196,6 +213,7 @@ void PORTE_IRQHandler(void)
 void LPTMR0_IRQHandler(void)
 {
     LPTMR_SET_CSR(LPTMR0, LPTMR_CSR_TCF_MASK);
+    LPTMR_WR_CSR(LPTMR0, 0x00); //Clear Interrupt Flag, Disable Interrupt, Disable Timer
 }
 
 void I2C0_IRQHandler(void)
@@ -206,6 +224,17 @@ void I2C0_IRQHandler(void)
 void I2C1_IRQHandler(void)
 {
     Wire.onService();
+}
+
+void RTC_Seconds_IRQHandler(void)
+{
+    Clock.secondsInterrupt();
+}
+
+void RTC_IRQHandler(void)
+{
+    Clock.alarmInterrupt();
+    Dash.wakeFromSleep();
 }
 
 #define TO_HEX(v) ( ((v) > 9) ? ((v)-10+'A') : ((v)+'0') )
@@ -231,13 +260,27 @@ void wvariant_init(void)
     NVIC_SetPriority(UART0_RX_TX_IRQn, 2);
     NVIC_SetPriority(UART1_RX_TX_IRQn, 1);
     NVIC_SetPriority(UART2_RX_TX_IRQn, 3);
+    NVIC_SetPriority(I2C0_IRQn, 4);
+    NVIC_SetPriority(I2C1_IRQn, 5);
+    NVIC_SetPriority(LPTMR0_IRQn, 4);
     NVIC_SetPriority(PIT0_IRQn, 8);
-    NVIC_SetPriority(PIT1_IRQn, 5);
+    NVIC_SetPriority(PIT2_IRQn, 5);
+    NVIC_SetPriority(PIT3_IRQn, 7);
+    NVIC_SetPriority(RTC_IRQn, 6);
     NVIC_SetPriority(PORTA_IRQn, 12);
     NVIC_SetPriority(PORTB_IRQn, 12);
     NVIC_SetPriority(PORTC_IRQn, 12);
     NVIC_SetPriority(PORTD_IRQn, 12);
     NVIC_SetPriority(PORTE_IRQn, 12);
+
+    Clock.init();
+    Dash.begin();
+    WireInternal.begin();
+    FuelGauge.init(WireInternal);
+    FuelGauge.quickStart();
+    Charger.beginAutoPercentage(20, 98);
+    SerialSystem.begin(115200);
+    HologramCloud.begin();
 }
 
 #ifdef __cplusplus

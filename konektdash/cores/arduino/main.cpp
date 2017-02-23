@@ -19,7 +19,7 @@
 #define ARDUINO_MAIN
 #include "Arduino.h"
 
-#include "Charger.h"
+// #include "Charger.h"
 // Weak empty variant initialization function.
 // May be redefined by variant files.
 void initVariant() __attribute__((weak));
@@ -42,6 +42,7 @@ int main( void )
   {
     loop();
     if (serialEventRun) serialEventRun();
+    HologramCloud.pollEvents();
     Charger.checkAuto();
   }
 

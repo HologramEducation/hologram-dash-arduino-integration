@@ -38,16 +38,24 @@
 #ifdef __cplusplus
 #include "Uart.h"
 #include "Dash.h"
+#include "Max1704x.h"
 #include "Charger.h"
 #include "Wire.h"
+#include "Clock.h"
+#include "Hologram.h"
+#include "SerialCloud.h"
 
 extern Uart Serial0;
-extern Uart SerialCloud;
+extern Uart SerialSystem;
 extern Uart Serial2;
 extern DashClass Dash;
 extern TwoWire Wire;
+extern ClockClass Clock;
+extern Max1704x FuelGauge;
+extern DashCharger Charger;
+extern Hologram HologramCloud;
+extern SerialCloudClass SerialCloud;
 #define DashPro Dash
-#define Konekt SerialCloud
 
 #endif
 

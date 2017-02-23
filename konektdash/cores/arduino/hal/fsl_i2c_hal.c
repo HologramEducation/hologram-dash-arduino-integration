@@ -291,6 +291,11 @@ void I2C_HAL_SetAddress7bit(I2C_Type * base, uint8_t address)
     I2C_BWR_C2_ADEXT(base, 0U);
 }
 
+uint8_t I2C_HAL_GetAddress7bit(I2C_Type * base)
+{
+    return I2C_RD_A1(base) >> 1;
+}
+
 /*FUNCTION**********************************************************************
  *
  * Function Name : I2C_HAL_SetAddress10bit

@@ -21,19 +21,24 @@
 */
 #pragma once
 
-#include "Arduino.h"
+#include "Max1704x.h"
 
 class DashCharger
 {
 public:
-    DashCharger();
+    DashCharger(Max1704x &fuel_gauge);
     bool begin();
     bool beginAutoPercentage(uint32_t minutes, uint8_t recharge_percentage=90);
     bool beginAutoMillivolts(uint32_t minutes, uint32_t recharge_millivolts=3900);
     void end();
 
+    bool isControllable();
+
     bool isEnabled();
     void enable(bool enabled);
+
+    uint32_t batteryMillivolts();
+    uint8_t batteryPercentage();
 
     uint8_t lastPercentage();
     uint32_t lastMillivolts();
@@ -43,14 +48,18 @@ public:
 
     void checkAuto(bool force=false);
 
+    void minuteInterrupt();
+
 protected:
-    bool charger_controllable;
+    bool ready;
+    Max1704x *gauge;
+    bool controllable;
     uint8_t percentage_last;
     uint32_t mv_last;
     uint32_t interval;
-    uint32_t millis_count;
+    volatile uint32_t minute_count;
     uint32_t recharge_pct;
     uint32_t recharge_mv;
-};
 
-extern DashCharger Charger;
+    void setupTimer(uint32_t minutes);
+};

@@ -91,4 +91,30 @@
 
 #define USB_STR_PRODUCT_SIZE  (28)
 
+#define WKUP0                       0
+#define WKUP_L04                    0
+#define WKUP_D10                    0
+#define WKUP4                       4
+#define WKUP_L12                    4
+#define WKUP_D18                    4
+#define WKUP5                       5
+#define WKUP_L13                    5
+#define WKUP_D19                    5
+#define WKUP6                       6
+#define WKUP_R07                    6
+#define WKUP_D05                    6
+#define WKUP13                      13
+#define WKUP_L06                    13
+#define WKUP_D12                    13
+#define WKUP14                      14
+#define WKUP_R04                    14
+#define WKUP_D02                    14
+#define WKUP15                      15
+#define WKUP_R05                    15
+#define WKUP_D03                    15
+#define WKUP16                      16
+#define WKUP_TIMER                  16
+#define WKUP21                      21
+#define WKUP_ALARM                  21
+
 void initVariant(void);

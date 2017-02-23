@@ -1,11 +1,11 @@
-dashload.name=konekt.io USB loader
+dashload.name=hologram.io USB loader
 dashload.communication=USB
 dashload.protocol=
 dashload.program.protocol=
 dashload.program.tool=konektloader
 dashload.program.extra_params=
 
-dashotaload.name=konekt.io OTA programmer
+dashotaload.name=hologram.io OTA programmer
 dashotaload.communication=OTA
 dashotaload.protocol=
 dashotaload.program.protocol=

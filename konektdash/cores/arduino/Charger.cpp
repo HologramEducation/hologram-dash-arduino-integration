@@ -21,49 +21,74 @@
 */
 
 #include "Charger.h"
+#include "Arduino.h"
+#include "hal/fsl_pit_hal.h"
 
-DashCharger::DashCharger()
-: charger_controllable(false), percentage_last(0), mv_last(0), interval(0),
-  millis_count(0), recharge_pct(0), recharge_mv(0)
+DashCharger::DashCharger(Max1704x &fuel_gauge)
+: controllable(false), percentage_last(0), mv_last(0), interval(0),
+  minute_count(0), recharge_pct(0), recharge_mv(0), gauge(&fuel_gauge)
 {}
 
 bool DashCharger::begin()
 {
+    if(ready) return controllable;
+    ready = true;
     SIM_HAL_EnableClock(SIM, kSimClockGatePortB);
     PORT_WR_PCR_MUX(PORTB, 17, MUX_GPIO);
     PORT_WR_PCR_PS(PORTB, 17, PORT_PULL_UP);
     PORT_WR_PCR_PE(PORTB, 17, 1);
     GPIO_CLR_PDDR(PTB, 1u << 17);
 
-    delayMicroseconds(100);
+    batteryPercentage();
+    batteryMillivolts();
 
-    charger_controllable = (LOW == ((GPIO_RD_PDIR(PTB) >> 17) & 1U));
+    controllable = (LOW == ((GPIO_RD_PDIR(PTB) >> 17) & 1U));
 
-    percentage_last = Dash.batteryPercentage();
-    mv_last = Dash.batteryMillivolts();
+    if(controllable) {
+        enable(false);
+        delay(3);
+        enable(true);
+    }
 
     interval = 0;
     recharge_pct = 0;
     recharge_mv = 0;
 
-    return charger_controllable;
+    return controllable;
+}
+
+void DashCharger::setupTimer(uint32_t minutes)
+{
+    interval = minutes;
+    minute_count = 0;
+    PIT_HAL_SetTimerPeriodByCount(PIT, 3, SystemBusClock * 60);
+    NVIC_EnableIRQ(PIT3_IRQn);
+    PIT_HAL_StartTimer(PIT, 3);
+    PIT_HAL_SetIntCmd(PIT, 3, true);
+}
+
+void DashCharger::minuteInterrupt()
+{
+    PIT_HAL_ClearIntFlag(PIT, 3);
+    if(minute_count < interval)
+    {
+        minute_count++;
+    }
 }
 
 bool DashCharger::beginAutoPercentage(uint32_t minutes, uint8_t recharge_percentage)
 {
     if(begin())
     {
-        if(minutes > 71582)
-            minutes = 71582;
-        interval = minutes*60*1000;
-        millis_count = millis();
-
         if(recharge_percentage > 99)
             recharge_percentage = 99;
         else if(recharge_percentage < 5)
             recharge_percentage = 5;
         recharge_pct = recharge_percentage;
         recharge_mv = 0;
+
+        setupTimer(minutes);
+
         return true;
     }
     return false;
@@ -73,17 +98,15 @@ bool DashCharger::beginAutoMillivolts(uint32_t minutes, uint32_t recharge_milliv
 {
     if(begin())
     {
-        if(minutes > 71582)
-            minutes = 71582;
-        interval = minutes*60*1000;
-        millis_count = millis();
-
         if(recharge_millivolts > 4100)
             recharge_millivolts = 4100;
         else if(recharge_millivolts < 3100)
             recharge_millivolts = 3100;
         recharge_mv = recharge_millivolts;
         recharge_pct = 0;
+
+        setupTimer(minutes);
+
         return true;
     }
     return false;
@@ -91,18 +114,42 @@ bool DashCharger::beginAutoMillivolts(uint32_t minutes, uint32_t recharge_milliv
 
 void DashCharger::end()
 {
+    NVIC_DisableIRQ(PIT3_IRQn);
+    PIT_HAL_StopTimer(PIT, 3);
+    PIT_HAL_SetIntCmd(PIT, 3, false);
+    ready = false;
     enable(true);
     PORT_WR_PCR_MUX(PORTB, 17, MUX_DISABLED);
-    charger_controllable = false;
+    controllable = false;
     interval = 0;
-    millis_count = 0;
+    minute_count = 0;
+}
+
+bool DashCharger::isControllable()
+{
+    return controllable;
+}
+
+uint32_t DashCharger::batteryMillivolts()
+{
+    if(!ready) begin();
+    mv_last = gauge->mv();
+    return mv_last;
+}
+
+uint8_t DashCharger::batteryPercentage()
+{
+    if(!ready) begin();
+    percentage_last = gauge->percentage();
+    return percentage_last;
 }
 
 void DashCharger::checkAuto(bool force)
 {
-    if(force || (millis() - millis_count >= interval))
+    if(!ready) begin();
+    if(force || minute_count == interval)
     {
-        millis_count = millis();
+        minute_count = 0;
 
         if(recharge_pct)
             checkPercentage(recharge_pct);
@@ -113,13 +160,15 @@ void DashCharger::checkAuto(bool force)
 
 bool DashCharger::isEnabled()
 {
-    if(!charger_controllable) return true;
+    if(!ready) begin();
+    if(!controllable) return true;
     return ((GPIO_RD_PDDR(PTB) & (1<<17)) == 0);
 }
 
 void DashCharger::enable(bool enabled)
 {
-    if(!charger_controllable) return;
+    if(!ready) begin();
+    if(!controllable) return;
     if(enabled)
     {
         if(isEnabled())
@@ -141,9 +190,10 @@ void DashCharger::enable(bool enabled)
 
 uint32_t DashCharger::checkPercentage(uint8_t restart_percentage)
 {
-    percentage_last = Dash.batteryPercentage();
-    mv_last = Dash.batteryMillivolts();
-    if(charger_controllable)
+    if(!ready) begin();
+    batteryPercentage();
+    batteryMillivolts();
+    if(controllable)
     {
         if(percentage_last >= 100)
             enable(false);
@@ -155,9 +205,10 @@ uint32_t DashCharger::checkPercentage(uint8_t restart_percentage)
 
 uint32_t DashCharger::checkMillivolts(uint32_t restart_mv)
 {
-    percentage_last = Dash.batteryPercentage();
-    mv_last = Dash.batteryMillivolts();
-    if(charger_controllable)
+    if(!ready) begin();
+    batteryPercentage();
+    batteryMillivolts();
+    if(controllable)
     {
         if(percentage_last >= 100)
             enable(false);
@@ -176,5 +227,3 @@ uint32_t DashCharger::lastMillivolts()
 {
     return mv_last;
 }
-
-DashCharger Charger;

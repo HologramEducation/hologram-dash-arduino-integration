@@ -110,6 +110,31 @@ size_t Print::print(const Printable& x)
   return x.printTo(*this);
 }
 
+size_t Print::print(const rtc_datetime_t &dt) {
+    size_t n = print(dt.year);
+    n += write('/');
+    if(dt.month < 10)
+        n += write('0');
+    n += print(dt.month);
+    n += write('/');
+    if(dt.day < 10)
+        n += write('0');
+    n += print(dt.day);
+    n += write(',');
+    if(dt.hour < 10)
+        n += write('0');
+    n += print(dt.hour);
+    n += write(':');
+    if(dt.minute < 10)
+        n += write('0');
+    n += print(dt.minute);
+    n += write(':');
+    if(dt.second < 10)
+        n += write('0');
+    n += print(dt.second);
+    return n;
+}
+
 size_t Print::println(void)
 {
   size_t n = print('\r');
@@ -185,6 +210,12 @@ size_t Print::println(const Printable& x)
   size_t n = print(x);
   n += println();
   return n;
+}
+
+size_t Print::println(const rtc_datetime_t &dt) {
+    size_t n = print(dt);
+    n += println();
+    return n;
 }
 
 // Private Methods /////////////////////////////////////////////////////////////

@@ -70,7 +70,7 @@ typedef enum _i2c_status_flag {
     kI2CAddressMatch     = I2C_S_RAM_SHIFT,
     kI2CSlaveTransmit    = I2C_S_SRW_SHIFT,
     kI2CInterruptPending = I2C_S_IICIF_SHIFT,
-    kI2CReceivedNak      = I2C_S_RXAK_SHIFT 
+    kI2CReceivedNak      = I2C_S_RXAK_SHIFT
 } i2c_status_flag_t;
 
 /*! @brief Direction of master and slave transfers.*/
@@ -157,7 +157,7 @@ static inline bool I2C_HAL_GetDmaCmd(I2C_Type * base)
  * @{
  */
 
-#if FSL_FEATURE_I2C_HAS_HIGH_DRIVE_SELECTION 
+#if FSL_FEATURE_I2C_HAS_HIGH_DRIVE_SELECTION
 /*!
  * @brief Controls the drive capability of the I2C pads.
  *
@@ -175,7 +175,7 @@ static inline void I2C_HAL_SetHighDriveCmd(I2C_Type * base, bool enable)
  * @brief Controls the width of the programmable glitch filter.
  *
  * Controls the width of the glitch, in terms of bus clock cycles, that the filter must absorb.
- * The filter does not allow any glitch whose size is less than or equal to this width setting, 
+ * The filter does not allow any glitch whose size is less than or equal to this width setting,
  * to pass.
  *
  * @param base The I2C peripheral base pointer
@@ -199,7 +199,7 @@ static inline void I2C_HAL_SetGlitchWidth(I2C_Type * base, uint8_t glitchWidth)
  * @brief Controls the I2C wakeup enable.
  *
  * The I2C module can wake the MCU from low power mode with no peripheral bus running when
- * slave address matching occurs. 
+ * slave address matching occurs.
  *
  * @param base The I2C peripheral base pointer.
  * @param enable true - Enables the wakeup function in low power mode.<br>
@@ -258,7 +258,7 @@ void I2C_HAL_SetBaudRate(I2C_Type * base,
  * known in advance.
  *
  * @param base The I2C peripheral base pointer
- * @param mult Value of the MULT bitfield, ranging from 0-2. 
+ * @param mult Value of the MULT bitfield, ranging from 0-2.
  * @param icr The ICR bitfield value, which is the index into an internal table in the I2C
  *     hardware that selects the baud rate divisor and SCL hold time.
  */
@@ -406,7 +406,7 @@ static inline void I2C_HAL_WriteByte(I2C_Type * base, uint8_t byte)
 #if FSL_FEATURE_I2C_HAS_DOUBLE_BUFFERING
     while (!I2C_BRD_S2_EMPTY(base))
     {}
-#endif 
+#endif
 
     I2C_WR_D(base, byte);
 }
@@ -416,7 +416,7 @@ static inline void I2C_HAL_WriteByte(I2C_Type * base, uint8_t byte)
  * It will wait till the transfer is actually completed.
  *
  * @param base The I2C peripheral base pointer
- * @return Returns the last byte received 
+ * @return Returns the last byte received
  */
 uint8_t I2C_HAL_ReadByteBlocking(I2C_Type * base);
 
@@ -502,7 +502,7 @@ i2c_status_t I2C_HAL_SlaveReceiveDataPolling(I2C_Type * base, uint8_t *rxBuff, u
  * @param address The slave address in the upper 7 bits. Bit 0 of this value must be 0.
  */
 void I2C_HAL_SetAddress7bit(I2C_Type * base, uint8_t address);
-
+uint8_t I2C_HAL_GetAddress7bit(I2C_Type * base);
 /*!
  * @brief Sets the primary slave address and enables 10-bit address mode.
  *
@@ -682,7 +682,7 @@ static inline void I2C_HAL_ClearInt(I2C_Type * base)
 #if FSL_FEATURE_I2C_HAS_START_STOP_DETECT || FSL_FEATURE_I2C_HAS_STOP_DETECT
 
 /*!
- * @name Bus stop detection flag 
+ * @name Bus stop detection flag
  * @{
  */
 
@@ -807,5 +807,3 @@ static inline void I2C_HAL_ClearStartFlag(I2C_Type * base)
 /*******************************************************************************
  * EOF
  ******************************************************************************/
-
-

@@ -24,6 +24,7 @@
 
 #include "WString.h"
 #include "Printable.h"
+#include "hal/fsl_rtc_hal.h"
 
 #define DEC 10
 #define HEX 16
@@ -65,6 +66,7 @@ class Print
     size_t print(unsigned long, int = DEC);
     size_t print(double, int = 2);
     size_t print(const Printable&);
+    size_t print(const rtc_datetime_t &dt);
 
     size_t println(const __FlashStringHelper *);
     size_t println(const String &s);
@@ -77,6 +79,7 @@ class Print
     size_t println(unsigned long, int = DEC);
     size_t println(double, int = 2);
     size_t println(const Printable&);
+    size_t println(const rtc_datetime_t &dt);
     size_t println(void);
 };
 

@@ -29,7 +29,7 @@
 #pragma once
 
 #include "RingBuffer.h"
-#include "Stream.h"
+#include "HardwareSerial.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,12 +45,13 @@ extern "C" {
 
 #include <cstddef>
 
-class SerialCDC : public Stream
+class SerialCDC : public HardwareSerial
 {
 public:
     SerialCDC();
     void fill(uint8_t data);
     void begin(unsigned long baudRate=115200);
+    void begin(unsigned long baudrate, uint16_t config) {begin();}
     void flush();
     size_t write(const uint8_t data);
     virtual size_t write(const uint8_t *buffer, size_t size);

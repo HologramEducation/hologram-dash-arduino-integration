@@ -67,6 +67,8 @@ void yield( void );
 void setup( void );
 void loop( void );
 
+void __cxa_pure_virtual();
+
 #ifdef __cplusplus
 } // extern "C"
 #endif // __cplusplus
@@ -81,6 +83,7 @@ void loop( void );
 #include "Wire.h"
 #include "Uart.h"
 #include "Dash.h"
+#include "Charger.h"
 #include "WVariant.h"
 
 #endif // __cplusplus

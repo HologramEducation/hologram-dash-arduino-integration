@@ -41,6 +41,8 @@ static const uint8_t MASTER_STATE_TX_NAK = 2;
 static const uint8_t MASTER_STATE_ARB_LOST = 3;
 static const uint8_t MASTER_STATE_READ_READY = 4;
 
+#define TWO_WIRE_TIMEOUT 100
+
 // Constructors ////////////////////////////////////////////////////////////////
 
 TwoWire::TwoWire(I2C_Type * instance, sim_clock_gate_name_t gate_name, uint32_t clock,
@@ -93,6 +95,25 @@ void TwoWire::begin(uint8_t address)
     setClock(100000);
 }
 
+void TwoWire::reset() {
+    bool enabled = SIM_HAL_GetGateCmd(SIM, gate_name);
+    uint8_t address = 0;
+    if(enabled) {
+        address = I2C_HAL_GetAddress7bit(instance);
+        end();
+    }
+    pinMode(sda, INPUT);
+    pinMode(scl, OUTPUT);
+    for(int i=0; i<9; i++) {
+        digitalWrite(scl, HIGH);
+        delay(5);
+        digitalWrite(scl, LOW);
+        delay(5);
+    }
+    pinMode(scl, INPUT);
+    if(enabled) begin(address);
+}
+
 void TwoWire::end()
 {
     NVIC_DisableIRQ(irqNumber);
@@ -103,7 +124,7 @@ void TwoWire::end()
 
 void TwoWire::setClock(uint32_t frequency)
 {
-  I2C_HAL_SetBaudRate(instance, clock, frequency / 1000, NULL);
+    I2C_HAL_SetBaudRate(instance, clock, frequency / 1000, NULL);
 }
 
 bool TwoWire::sendAddress(uint16_t slaveAddress)
@@ -121,7 +142,7 @@ bool TwoWire::sendAddress(uint16_t slaveAddress)
 
     while(master_state == MASTER_STATE_IDLE || master_state == MASTER_STATE_ARB_LOST)
     {
-        if(millis() - t0 >= 25 || master_state == MASTER_STATE_ARB_LOST)
+        if(millis() - t0 >= TWO_WIRE_TIMEOUT || master_state == MASTER_STATE_ARB_LOST)
         {
             I2C_HAL_SendStop(instance);
             I2C_HAL_SetDirMode(instance, kI2CReceive);
@@ -139,8 +160,8 @@ uint8_t TwoWire::requestFrom(uint8_t address, uint8_t quantity, uint8_t sendStop
 
     while(I2C_HAL_GetStatusFlag(instance, kI2CBusBusy) && !I2C_HAL_IsMaster(instance))
     {
-        if(millis() - t0 >= 25)
-            return 4; //timeout
+        if(millis() - t0 >= TWO_WIRE_TIMEOUT)
+            return 0; //timeout
     }
 
     if(quantity > BUFFER_LENGTH){
@@ -182,7 +203,7 @@ uint8_t TwoWire::requestFrom(uint8_t address, uint8_t quantity, uint8_t sendStop
 
     while(master_state == MASTER_STATE_IDLE)
     {
-        if(millis() - t0 >= 25)
+        if(millis() - t0 >= TWO_WIRE_TIMEOUT)
         {
             rxBufferIndex = 0;
             rxBufferLength = 0;
@@ -272,7 +293,7 @@ uint8_t TwoWire::endTransmission(uint8_t sendStop)
 
     while(I2C_HAL_GetStatusFlag(instance, kI2CBusBusy) && !I2C_HAL_IsMaster(instance))
     {
-        if(millis() - t0 >= 25)
+        if(millis() - t0 >= TWO_WIRE_TIMEOUT)
             return 4; //timeout
     }
 

@@ -3,7 +3,7 @@
   UI and features specific for the Konekt Dash and
   Konekt Dash Pro family of products.
 
-  http://konekt.io
+  http://hologram.io
 
   Copyright (c) 2015 Konekt, Inc.  All rights reserved.
 
@@ -34,7 +34,7 @@
 class DashClass
 {
 public:
-    DashClass(TwoWire &wire_internal);
+    DashClass();
     void begin();
     void end();
 
@@ -48,6 +48,12 @@ public:
     void attachWakeup(uint32_t pin, uint32_t mode);
     void detachWakeup(uint32_t pin);
     void clearWakeup();
+
+    void attachTimer(void (*callback)(void));
+    void detachTimer();
+    void startTimerMS(uint32_t interval_ms, bool repeat=false);
+    void startTimerSec(uint32_t interval_sec, bool repeat=false);
+    void stopTimer();
 
     void snooze(uint32_t ms);
     void sleep();
@@ -63,12 +69,13 @@ public:
     void shutdown() {lls(true);}
     uint8_t lastWakeupSource();
 
-    uint32_t batteryMillivolts();
-    uint8_t batteryPercentage();
+    String serialNumber();
+
+    void stateLED(uint32_t *on, uint32_t *off, uint32_t *dim);
 
     void pulseInterrupt();
     void wakeFromSleep();
-    void wakeFromSnooze();
+    void timerExpired(uint32_t source);
 
     int bootVersionNumber();
     String bootVersion();
@@ -79,8 +86,10 @@ protected:
     bool pulse_on;
     bool ready;
     volatile bool sleeping;
-    TwoWire *wire;
     uint32_t wakeup;
+    uint8_t led_dim;
+    void (*timer_callback)(void);
+    bool timer_oneshot;
 
     enum
     {
@@ -92,6 +101,6 @@ protected:
     void writeLED(bool on);
     void lls(bool halt, uint32_t mode=MODE_LLWU_GPIO);
     uint32_t wakeupMask(uint32_t pin, uint32_t mode);
-    void do_snooze(uint32_t ticks);
-    void timedDeepSleep(uint32_t ms, bool gpio_wake);
+    void startSleepTimer(uint32_t ms);
+    void timedDeepSleep(uint32_t ms, bool all_sources_wake);
 };
