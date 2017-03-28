@@ -64,7 +64,7 @@ void loop() {
   HologramCloud.connect();
 
   //Buffer a message to send to the Hologram Cloud
-  HologramCloud.print("A0: ");
+  HologramCloud.print("A01: ");
   HologramCloud.println(analogRead(A0));
   HologramCloud.print("Battery: ");
   HologramCloud.print(FuelGauge.percentage());
@@ -72,7 +72,7 @@ void loop() {
   HologramCloud.print("Signal Strength: ");
   HologramCloud.println(HologramCloud.getSignalStrength());
   //Attach tags to the message for advanced routing and processing
-  HologramCloud.attachTag("A0");
+  HologramCloud.attachTag("A01");
   HologramCloud.attachTag("Battery");
   HologramCloud.attachTag("SignalStrength");
 
