@@ -1,9 +1,9 @@
 /*
-  hologramcloud_demo.ino - demonstrate features of the HologramCloud
+  hologram_dash_cloud.ino - demonstrate features of the HologramCloud
   This sketch will send a message to the cloud every 30 minutes.
   It will also send a cloud message on receive of an SMS.
 
-  http://hologram.io
+  https://hologram.io
 
   Copyright (c) 2016 Konekt, Inc.  All rights reserved.
 
@@ -31,8 +31,27 @@ void cloud_sms(const String &sender, const rtc_datetime_t &timestamp, const Stri
   HologramCloud.print(timestamp);
   HologramCloud.print(" Message: ");
   HologramCloud.print(message);
-  HologramCloud.attachTag("rx_sms");
+  HologramCloud.attachTopic("rx_sms");
   HologramCloud.sendMessage();
+}
+
+#define SIZE_INBOUND 4096               //Inbound message size limit
+char buffer_inbound[SIZE_INBOUND];      //Holds inbound message
+
+//Process a received inbound message
+void cloud_inbound(int length) {
+  buffer_inbound[length] = 0; //NULL terminate the data for printing as a String
+
+  HologramCloud.sendMessage(buffer_inbound, "inbound");
+}
+
+void cloud_notify(cloud_event e) {
+  switch(e) {
+    case CLOUD_EVENT_DISCONNECTED:
+      //re-connect and re-open the server socket on port 4444
+      HologramCloud.listen(4444);
+      break;
+  }
 }
 
 void setup() {
@@ -41,7 +60,17 @@ void setup() {
   //Use the cloud_sms function to process incoming SMS
   HologramCloud.attachHandlerSMS(cloud_sms);
 
-  //Send a message to the Hologram Cloud with the tag "cloud_demo"
+  //Use the cloud_inbound function to process a received message.
+  //Uses a buffer and size defined in the sketch for user requirements.
+  //If String data, reserve one byte for NULL-terminator
+  //The full buffer size can be used for binary or non-printed data.
+  HologramCloud.attachHandlerInbound(cloud_inbound,
+                                     buffer_inbound,
+                                     SIZE_INBOUND-1);
+
+  HologramCloud.attachHandlerNotify(cloud_notify);
+
+  //Send a message to the Hologram Cloud with the topic "cloud_demo"
   //Will connect to the Hologram Cloud automatically
   HologramCloud.sendMessage("Hologram Cloud Demo Active", "cloud_demo");
 
@@ -63,18 +92,21 @@ void loop() {
   //This is optional because calling sendMessage() will connect as needed
   HologramCloud.connect();
 
+  //Open a server socket on port 4444 to receive messages
+  HologramCloud.listen(4444);
+
   //Buffer a message to send to the Hologram Cloud
-  HologramCloud.print("A0: ");
-  HologramCloud.println(analogRead(A0));
+  HologramCloud.print("A01: ");
+  HologramCloud.println(analogRead(A01));
   HologramCloud.print("Battery: ");
   HologramCloud.print(FuelGauge.percentage());
   HologramCloud.println("%");
   HologramCloud.print("Signal Strength: ");
   HologramCloud.println(HologramCloud.getSignalStrength());
-  //Attach tags to the message for advanced routing and processing
-  HologramCloud.attachTag("A0");
-  HologramCloud.attachTag("Battery");
-  HologramCloud.attachTag("SignalStrength");
+  //Attach topics to the message for advanced routing and processing
+  HologramCloud.attachTopic("A01");
+  HologramCloud.attachTopic("Battery");
+  HologramCloud.attachTopic("SignalStrength");
 
   //Attempt to send the buffered message
   if(!HologramCloud.sendMessage()) {
@@ -88,6 +120,7 @@ void loop() {
         break;
 
       case CLOUD_ERR_SIGNAL:
+      case CLOUD_ERR_UNREGISTERED:
         //Low signal, check the antenna, or move into better coverage area
         Dash.snooze(10000); //wait 10 seconds
 
@@ -96,7 +129,7 @@ void loop() {
         //Attempt to send the buffered message again.
         HologramCloud.sendMessage();
 
-        //Any call to write to the buffer or attach a tag or
+        //Any call to write to the buffer or attach a topic or
         //send a new message String will reset the buffer.
         HologramCloud.print("Test message");
 
@@ -110,8 +143,10 @@ void loop() {
   }
 
   //Keep the modem awake while the Dash is in DeepSleep to check for SMS
-  if(!Clock.alarmExpired())
-    Dash.deepSleep();
+  while(!Clock.alarmExpired()) {
+    HologramCloud.pollEvents();
+    Dash.sleep();
+  }
 
   //The LED is turned off in deep sleep, so turn it on now
   Dash.onLED();
@@ -125,6 +160,7 @@ void loop() {
   HologramCloud.pollEvents();
 
   //Done with the modem for now, turn it off to save power
+  //This closes all sockets
   HologramCloud.powerDown();
 
   //only deep sleep if the alarm is still pending

@@ -64,12 +64,16 @@ DashReadEvalPrintLoop DashReadEvalPrint;
 static const ReadEvalPrintCommand CLOUD[] = {
     {2, 0, "connect to the cloud",                      "cloud", "connect"},                        //0
     {2, 0, "disconnect from the cloud",                 "cloud", "disconnect"},                     //1
-    {3, 7, "send a message to the Hologram Clound",     "cloud", "send", "<message>", "[tags]"},    //2
+    {3, 7, "send a message to the Hologram Cloud",      "cloud", "send", "<message>", "[topics]"},  //2
     {2, 0, "get signal strength",                       "cloud", "signal"},                         //3
     {2, 0, "get connect state",                         "cloud", "status"},                         //4
     {2, 0, "wake up the modem",                         "cloud", "on"},                             //5
     {2, 0, "shutdown the modem",                        "cloud", "off"},                            //6
     {2, 0, "cloud version number",                      "cloud", "version"},                        //7
+    {2, 0, "ICCID of the SIM card",                     "cloud", "iccid"},                          //8
+    {2, 0, "current network operator",                  "cloud", "operator"},                       //9
+    {3, 0, "start inbound connection listener",         "cloud", "listen", "<port>"},               //10
+    {2, 0, "get approximate location",                  "cloud", "location"},                       //11
 };
 
 const ReadEvalPrintCommand* DashCloudProvider::getTable(uint32_t *num_commands)
@@ -82,7 +86,8 @@ void DashCloudProvider::printStatus(Print &port) {
     switch(HologramCloud.getConnectionStatus()) {
         case CLOUD_DISCONNECTED: port.println("Disconnected."); break;
         case CLOUD_CONNECTED: port.println("Connected."); break;
-        case CLOUD_ERR_SIM: port.println("Error. Check SIM card inserted properly."); break;
+        case CLOUD_ERR_SIM: port.println("Error. Check SIM card inserted properly and power cycle."); break;
+        case CLOUD_ERR_UNREGISTERED: port.println("Not registered on network."); break;
         case CLOUD_ERR_SIGNAL: port.println("No signal. Check antenna."); break;
         case CLOUD_ERR_CONNECT: port.println("No connection. Check if SIM is active."); break;
         default: port.print("Unknown ");break;
@@ -108,9 +113,9 @@ bool DashCloudProvider::event(ReadEvalPrintEvent &event, Print &port)
 
     case 2: //cloud send
     {
-        uint32_t numtags = event.numArguments() - 3;
-        for (int i = 0; i < numtags; i++) {
-            HologramCloud.attachTag(event.getArgument(3 + i));
+        uint32_t numtopics = event.numArguments() - 3;
+        for (int i = 0; i < numtopics; i++) {
+            HologramCloud.attachTopic(event.getArgument(3 + i));
         }
         port.print("Sending message... ");
         if (HologramCloud.sendMessage(event.getArgument(2))) {
@@ -144,6 +149,40 @@ bool DashCloudProvider::event(ReadEvalPrintEvent &event, Print &port)
         port.println(HologramCloud.systemVersion());
         break;
 
+    case 8: //cloud iccid
+        port.println(HologramCloud.getICCID());
+        break;
+
+    case 9: //cloud operator
+        port.println(HologramCloud.getNetworkOperator());
+        break;
+
+    case 10: //cloud listen port
+        {
+            int portnum = 0;
+            if(event.tolong(2, &portnum)) {
+                if(HologramCloud.listen(portnum)) {
+                    port.print("Listening on port ");
+                    port.println(portnum);
+                } else {
+                    port.println("Listening failed");
+                }
+            } else {
+                return event.invalidParameter(2, "port number");
+            }
+        }
+        break;
+
+    case 11: //cloud location
+        {
+            if(HologramCloud.getLocation()) {
+                port.println("Location requested. Response can take a few minutes.");
+            } else {
+                port.println("Location not available.");
+            }
+        }
+        break;
+
     default:
         return false;
     }
@@ -154,6 +193,7 @@ static const ReadEvalPrintCommand MODEM[] = {
     {3, 0, "send a command to the modem",               "modem", "cmd", "<command>"},               //0
     {3, 0, "send a query to the modem",                 "modem", "query", "<command>"},             //1
     {4, 0, "set a value on the modem",                  "modem", "set", "<command>", "<value>"},    //2
+    {3, 0, "enter passthrough mode if command is 1",    "modem", "passthrough", "<command>"},       //3
 };
 
 const ReadEvalPrintCommand* DashModemProvider::getTable(uint32_t *num_commands)
@@ -198,6 +238,26 @@ bool DashModemProvider::event(ReadEvalPrintEvent &event, Print &port)
             port.println("ERROR");
         }
         break;
+    case 3: //modem passthrough
+    {
+        int val = 0;
+        if(!event.tolong(2, &val) || val != 1) {
+            return event.invalidParameter(2, "must be 1 to enter passthrough");
+        }
+        if(HologramCloud.enterPassthrough()) {
+            port.println("Entering passthrough, reset to exit");
+            HardwareSerial *s = (HardwareSerial *)&port;
+            while(1) {
+                while(s->available())
+                  SerialSystem.write(s->read());
+                while(SerialSystem.available())
+                  s->write(SerialSystem.read());
+            }
+        } else {
+            port.println("Passthrough not available");
+        }
+        break;
+    }
     default:
         return false;
     }

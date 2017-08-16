@@ -35,6 +35,18 @@ Spi::Spi(SPI_Type * instance, sim_clock_gate_name_t gate_name, uint32_t clock,
     instance(instance), gate_name(gate_name), clock(clock),
     sin(sin), sout(sout), sck(sck), cs(0) {}
 
+void Spi::attachInterrupt(void) {
+    // Should be enableInterrupt()
+}
+
+void Spi::detachInterrupt(void) {
+    // Should be disableInterrupt()
+}
+
+void Spi::usingInterrupt(uint8_t interruptNumber) {
+
+}
+
 void Spi::begin()
 {
     SIM_HAL_EnableClock(SIM, gate_name);
@@ -81,20 +93,20 @@ void Spi::applySettings(SPISettings settings)
     applySettings();
 }
 
-void Spi::setBitOrder(uint8_t bitOrder)
+void Spi::setBitOrder(uint8_t pin, BitOrder bitOrder)
 {
     current_settings.direction = (bitOrder == MSBFIRST) ? kDspiMsbFirst : kDspiLsbFirst;
     applySettings();
 }
 
-void Spi::setDataMode(uint8_t dataMode)
+void Spi::setDataMode(uint8_t pin, uint8_t dataMode)
 {
     current_settings.polarity = (dspi_clock_polarity_t)((dataMode >> 1) & 1);
     current_settings.phase = (dspi_clock_phase_t)(dataMode & 1);
     applySettings();
 }
 
-void Spi::setClockDivider(uint8_t clockDiv)
+void Spi::setClockDivider(uint8_t pin, uint8_t clockDiv)
 {
     if(clockDiv == 0) return;
     //Assume Arduino 16MHz clock
@@ -158,9 +170,8 @@ uint8_t Spi::transfer(uint8_t data)
     return DSPI_HAL_ReadData(instance);
 }
 
-#if SPI_INSTANCE_COUNT > 0
-Spi SPI(SPI_INSTANCE, SPI_GATE, SPI_CLOCK_SRC, SPI_SIN, SPI_SOUT, SPI_SCK);
 #if defined (ALT_SPI)
-Spi AltSPI(SPI_INSTANCE, SPI_GATE, SPI_CLOCK_SRC, ALT_SPI_SIN, ALT_SPI_SOUT, ALT_SPI_SCK);
-#endif
+Spi SPI(SPI_INSTANCE, SPI_GATE, SPI_CLOCK_SRC, ALT_SPI_SIN, ALT_SPI_SOUT, ALT_SPI_SCK);
+#else
+Spi SPI(SPI_INSTANCE, SPI_GATE, SPI_CLOCK_SRC, SPI_SIN, SPI_SOUT, SPI_SCK);
 #endif

@@ -1,7 +1,28 @@
+/*
+  Modem.h - Class definitions that provide a generic modem interface.
+
+  https://hologram.io
+
+  Copyright (c) 2017 Konekt, Inc.  All rights reserved.
+
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License, or (at your option) any later version.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
 #pragma once
 
 #include <cstdint>
-#include <cstddef> 
+#include <cstddef>
 
 typedef enum {
     MODEM_NO_MATCH = -3,
@@ -39,6 +60,7 @@ public:
         return command(cmd, expected, timeout, retries, true);
     }
     const char* lastResponse();
+    uint32_t numResponses();
     void checkURC();
     void rawWrite(char c);
     void rawWrite(const char* content);
@@ -46,6 +68,9 @@ public:
     void dataWrite(uint8_t b);
     void rawRead(int length, void* buffer);
     virtual uint32_t msTick()=0;
+
+    static uint8_t convertHex(char hex);
+    static uint8_t convertHex(const char* hex);
 
 protected:
     typedef enum {
@@ -73,11 +98,13 @@ protected:
     bool findline(char *buffer, uint32_t timeout, uint32_t startMillis);
     modem_result processResponse(uint32_t timeout, const char* cmd);
     int strncmpci(const char* str1, const char* str2, size_t num);
+    bool commandResponseMatch(const char* cmd, const char* response, int num);
 
     URCReceiver *receiver;
     char cmdbuffer[32];
     char valbuffer[48];
-    char respbuffer[64];
-    char okbuffer[64];
+    char respbuffer[512];
+    char okbuffer[512];
     char *valoffset;
+    uint32_t numresponses;
 };

@@ -1,5 +1,5 @@
 name=hologram.io Dash and DashPro Boards
-version=0.9.2
+version=0.10.4
 
 # Compile variables
 # -----------------
@@ -12,13 +12,13 @@ compiler.warning_flags.all=-Wall -Wextra
 
 compiler.path={runtime.tools.arm-none-eabi-gcc.path}/bin/
 compiler.c.cmd=arm-none-eabi-gcc
-compiler.c.flags=-mcpu={build.mcu} {build.clock_setup} -mthumb -c -g -Os {compiler.warning_flags} -ffunction-sections -fdata-sections -nostdlib --param max-inline-insns-single=500 -MMD -std=gnu11 -DFSL_OSA_BM_TIMER_CONFIG=2
+compiler.c.flags=-mcpu={build.mcu} {build.clock_setup} {build.spi_selection} {build.use_hologram_cloud} -mthumb -c -g -Os {compiler.warning_flags} -ffunction-sections -fdata-sections -nostdlib --param max-inline-insns-single=500 -MMD -std=gnu11 -DFSL_OSA_BM_TIMER_CONFIG=2
 compiler.c.elf.cmd=arm-none-eabi-gcc
 compiler.c.elf.flags=-Os -Wl,--gc-sections -save-temps
 compiler.S.cmd=arm-none-eabi-gcc
 compiler.S.flags=-c -g -x assembler-with-cpp
 compiler.cpp.cmd=arm-none-eabi-g++
-compiler.cpp.flags=-mcpu={build.mcu} {build.clock_setup} -mthumb -c -g -Os {compiler.warning_flags} -ffunction-sections -fdata-sections -fno-threadsafe-statics -nostdlib --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -MMD -std=gnu++11  -DFSL_OSA_BM_TIMER_CONFIG=2
+compiler.cpp.flags=-mcpu={build.mcu} {build.clock_setup} {build.spi_selection} {build.use_hologram_cloud} -mthumb -c -g -Os {compiler.warning_flags} -ffunction-sections -fdata-sections -fno-threadsafe-statics -nostdlib --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -MMD -std=gnu++11  -DFSL_OSA_BM_TIMER_CONFIG=2
 compiler.ar.cmd=arm-none-eabi-ar
 compiler.ar.flags=rcs
 compiler.objcopy.cmd=arm-none-eabi-objcopy

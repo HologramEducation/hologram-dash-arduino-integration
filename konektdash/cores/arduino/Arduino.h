@@ -85,6 +85,7 @@ void __cxa_pure_virtual();
 #include "Dash.h"
 #include "Charger.h"
 #include "WVariant.h"
+#include "Tone.h"
 
 #endif // __cplusplus
 

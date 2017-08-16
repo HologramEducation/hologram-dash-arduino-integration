@@ -1,3 +1,24 @@
+/*
+  Modem.cpp - Class definitions that provide a generic modem interface.
+
+  https://hologram.io
+
+  Copyright (c) 2017 Konekt, Inc.  All rights reserved.
+
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License, or (at your option) any later version.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
 #include "Modem.h"
 
 #include <cstring>
@@ -77,7 +98,7 @@ modem_result Modem::waitSetComplete(const char* expected, uint32_t timeout, uint
     modem_result r = MODEM_TIMEOUT;
     do {
         respbuffer[0] = 0;
-        modem_result r = processResponse(timeout, cmdbuffer);
+        r = processResponse(timeout, cmdbuffer);
         if(r == MODEM_OK) {
             if(expected) {
                 if(strcmp(expected, respbuffer) == 0) {
@@ -175,28 +196,51 @@ int Modem::strncmpci(const char* str1, const char* str2, size_t num) {
     return 0;
 }
 
+bool Modem::commandResponseMatch(const char* cmd, const char* response, int num) {
+    if(strncmpci(cmd, response, num) == 0) {
+        if(response[num] == ':' && response[num+1] == ' ')
+            return true;
+    }
+    return false;
+}
+
+uint32_t Modem::numResponses() {
+    return numresponses;
+}
+
 modem_result Modem::processResponse(uint32_t timeout, const char* cmd) {
     uint32_t startMillis = msTick();
+    numresponses = 0;
     while(findline(okbuffer, timeout, startMillis)) {
-        if(strcmp(okbuffer, "ERROR") == 0) {
+        if(okbuffer[0] == 0) {
+            continue;
+        } else if(strcmp(okbuffer, "ERROR") == 0) {
             return MODEM_ERROR;
         } else if(strncmp(okbuffer, "+CME ERROR:", 11) == 0) {
             strcpy(respbuffer, okbuffer);
             return MODEM_ERROR;
+        } else if(strncmp(okbuffer, "+CMS ERROR:", 11) == 0) {
+            strcpy(respbuffer, okbuffer);
+            return MODEM_ERROR;
         } else if(strcmp(okbuffer, "OK") == 0) {
             return MODEM_OK;
-        } else if(okbuffer[0] == '+' && strncmpci(cmd, okbuffer, strlen(cmd)) != 0) {
-            debugout(">URC: '");
-            debugout(okbuffer);
-            debugout("'\r\n");
-            if(receiver)
-                receiver->onURC(okbuffer);
+        } else if(okbuffer[0] == '+') {
+            if(commandResponseMatch(cmd, okbuffer, strlen(cmd))) {
+                numresponses++;
+                strcpy(respbuffer, okbuffer);
+            } else {
+                debugout(">URC: '");
+                debugout(okbuffer);
+                debugout("'\r\n");
+                if(receiver)
+                    receiver->onURC(okbuffer);
+            }
             startMillis = msTick();
         } else if(strncmp(okbuffer, "AT", 2) == 0 && strncmp(&okbuffer[2], cmd, strlen(cmd)) == 0) {
             debugout(">ECHO: '");
             debugout(okbuffer);
             debugout("'\r\n");
-        } else if(strlen(okbuffer) > 0) {
+        } else {
             strcpy(respbuffer, okbuffer);
         }
     }
@@ -208,7 +252,7 @@ modem_result Modem::command(const char* cmd, const char* expected, uint32_t time
     do {
         respbuffer[0] = 0;
         modemwrite(cmd, query ? CMD_FULL_QUERY : CMD_FULL);
-        modem_result r = processResponse(timeout, cmd);
+        r = processResponse(timeout, cmd);
         if(r == MODEM_OK) {
             if(expected) {
                 if(strcmp(expected, respbuffer) == 0) {
@@ -292,4 +336,22 @@ void Modem::rawRead(int length, void* buffer) {
     }
     if(buffer)
         pbuffer[read] = 0;
+}
+
+uint8_t Modem::convertHex(char hex) {
+    uint8_t x = 0;
+    if(hex >= '0' && hex <= '9') {
+        x = hex - '0';
+    } else if(hex >= 'A' && hex <= 'F') {
+        x = hex - 'A' + 10;
+    } else if(hex >= 'a' && hex <= 'f') {
+        x = hex - 'a' + 10;
+    }
+    return x;
+}
+
+uint8_t Modem::convertHex(const char* hex) {
+    uint8_t x = convertHex(hex[0]) << 4;
+    x |= convertHex(hex[1]);
+    return x;
 }

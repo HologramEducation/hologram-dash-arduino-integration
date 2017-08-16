@@ -26,6 +26,24 @@
 #include "Arduino.h"
 #include "hal/fsl_dspi_hal.h"
 
+// SPI_HAS_TRANSACTION means SPI has
+//   - beginTransaction()
+//   - endTransaction()
+//   - usingInterrupt()
+//   - SPISetting(clock, bitOrder, dataMode)
+#define SPI_HAS_TRANSACTION 1
+
+// SPI_HAS_EXTENDED_CS_PIN_HANDLING means SPI has automatic
+// CS pin handling and provides the following methods:
+//   - begin(pin)
+//   - end(pin)
+//   - setBitOrder(pin, bitorder)
+//   - setDataMode(pin, datamode)
+//   - setClockDivider(pin, clockdiv)
+//   - transfer(pin, data, SPI_LAST/SPI_CONTINUE)
+//   - beginTransaction(pin, SPISettings settings) (if transactions are available)
+#define SPI_HAS_EXTENDED_CS_PIN_HANDLING 1
+
 #define SPI_MODE0 0x00
 #define SPI_MODE1 0x01
 #define SPI_MODE2 0x02
@@ -61,22 +79,27 @@ public:
     uint8_t transfer(uint8_t data=0);
     inline void transfer(void *buf, size_t count);
 
+    // SPI Configuration methods
+    void attachInterrupt(void);
+    void detachInterrupt(void);
+
     void begin();
     void end();
 
+    void usingInterrupt(uint8_t interruptNumber);
+    void beginTransaction(SPISettings settings) { beginTransaction(BOARD_SPI_DEFAULT_SS, settings); }
     uint32_t beginTransaction(uint32_t chip_select);
     uint32_t beginTransaction(uint32_t chip_select, SPISettings settings);
     void endTransaction();
 
-    // This function is deprecated.  New applications should use
-    // beginTransaction() to configure SPI settings.
-    void setBitOrder(uint8_t bitOrder);
-    // This function is deprecated.  New applications should use
-    // beginTransaction() to configure SPI settings.
-    void setDataMode(uint8_t dataMode);
-    // This function is deprecated.  New applications should use
-    // beginTransaction() to configure SPI settings.
-    void setClockDivider(uint8_t clockDiv);
+    void setBitOrder(uint8_t pin, BitOrder order);
+    void setDataMode(uint8_t pin, uint8_t mode);
+    void setClockDivider(uint8_t pin, uint8_t div);
+
+    // These methods sets the same parameters but on default pin BOARD_SPI_DEFAULT_SS
+	void setBitOrder(BitOrder order) { setBitOrder(BOARD_SPI_DEFAULT_SS, order); };
+	void setDataMode(uint8_t mode) { setDataMode(BOARD_SPI_DEFAULT_SS, mode); };
+	void setClockDivider(uint8_t div) { setClockDivider(BOARD_SPI_DEFAULT_SS, div); };
     // This function is deprecated.  New applications should use
     // beginTransaction() to configure SPI settings.
     void setClockFrequency(uint32_t clockFrequency);
@@ -104,11 +127,6 @@ void Spi::transfer(void *buf, size_t count)
         buffer[i] = transfer(buffer[i]);
 }
 
-#if SPI_INSTANCE_COUNT > 0
-    extern Spi SPI;
-#if defined (ALT_SPI)
-    extern Spi AltSPI;
-#endif
-#endif
+extern Spi SPI;
 
 #endif

@@ -1,6 +1,11 @@
 /*
-  ArduinoModem.h - Class definitions that provide Arduino layer for a modem
-  interface on the Dash.
+  hologram_dash_passthrough.ino - put the Dash modem into passthrough mode.
+  Use Serial to read/write directly with the modem.
+
+  WARNING! This sketch allows writing AT commands directly to the modem. It is
+  for advanced users only. This mode is provided as a convenience and is not
+  officially supported by Hologram. Consult the modem AT command manual for
+  supported commands.
 
   https://hologram.io
 
@@ -20,30 +25,18 @@
   License along with this library; if not, write to the Free Software
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
-#pragma once
 
-#include "../sdk/network/modem/Modem.h"
-#include "Stream.h"
+void setup() {
+  Serial.begin();
 
-class ArduinoModem : public Modem {
-public:
-    ArduinoModem();
-    void begin(Stream &uart, URCReceiver &reciever, Stream *debug=NULL);
+  //Requires System Firmware 0.9.10 or higher
+  HologramCloud.enterPassthrough();
+  //WARNING: Not officially supported. Advanced users only.
+}
 
-protected:
-    virtual void modemout(char c);
-    virtual void modemout(const char* str);
-    virtual void modemout(uint8_t b);
-    virtual void debugout(const char* str);
-    virtual void debugout(char c);
-    virtual void debugout(int i);
-    virtual bool modemavailable();
-    virtual uint8_t modemread();
-    virtual uint8_t modempeek();
-    virtual uint32_t msTick();
-
-    Stream *uart;
-    Stream *debug;
-};
-
-extern ArduinoModem modem;
+void loop() {
+  while(Serial.available())
+    SerialSystem.write(Serial.read());
+  while(SerialSystem.available())
+    Serial.write(SerialSystem.read());
+}

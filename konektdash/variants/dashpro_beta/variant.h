@@ -82,6 +82,14 @@
 #define SPI_SCK             13
 #define SPI_SOUT            11
 #define SPI_SIN             12
+#define SPI_SS              10
+
+#define MOSI                SPI_SOUT
+#define MISO                SPI_SIN
+#define SCK                 SPI_SCK
+#define SS                  SPI_SS
+
+#define BOARD_SPI_DEFAULT_SS    SS
 
 #define USB_STR_PRODUCT_SIZE  (38)
 

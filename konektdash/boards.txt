@@ -1,11 +1,15 @@
 menu.cpu_speed=CPU Speed
 menu.check_update=Firmware Updates
+menu.spi_select=SPI
 
 dash.menu.cpu_speed.speed120=120MHz
 dash.menu.cpu_speed.speed100=100MHz
 dash.menu.cpu_speed.speed48=48MHz
 dash.menu.check_update.check=Check
 dash.menu.check_update.skip=Skip
+dash.menu.check_update.custom=Custom Firmware
+dash.menu.spi_select.spi=SPI
+dash.menu.spi_select.alt=ALT SPI
 dash.name=Dash
 dash.build.mcu=cortex-m4
 dash.build.board=DASH
@@ -23,12 +27,19 @@ dash.menu.cpu_speed.speed100.build.clock_setup=-DCLOCK_SETUP=1
 dash.menu.cpu_speed.speed120.build.clock_setup=-DCLOCK_SETUP=2
 dash.menu.check_update.check.upload.update_check=
 dash.menu.check_update.skip.upload.update_check=--nocheck
+dash.menu.check_update.custom.upload.update_check=--nocheck
+dash.menu.check_update.check.build.use_hologram_cloud=-DUSE_HOLOGRAM_CLOUD
+dash.menu.check_update.skip.build.use_hologram_cloud=-DUSE_HOLOGRAM_CLOUD
+dash.menu.check_update.custom.build.use_hologram_cloud=
+dash.menu.spi_select.spi.build.spi_selection=
+dash.menu.spi_select.alt.build.spi_selection=-DALT_SPI
 
 dashpro.menu.cpu_speed.speed120=120MHz
 dashpro.menu.cpu_speed.speed100=100MHz
 dashpro.menu.cpu_speed.speed48=48MHz
 dashpro.menu.check_update.check=Check
 dashpro.menu.check_update.skip=Skip
+dashpro.menu.check_update.custom=Custom Firmware
 dashpro.name=DashPro
 dashpro.build.mcu=cortex-m4
 dashpro.build.board=DASHPRO
@@ -46,12 +57,18 @@ dashpro.menu.cpu_speed.speed100.build.clock_setup=-DCLOCK_SETUP=1
 dashpro.menu.cpu_speed.speed120.build.clock_setup=-DCLOCK_SETUP=2
 dashpro.menu.check_update.check.upload.update_check=
 dashpro.menu.check_update.skip.upload.update_check=--nocheck
+dashpro.menu.check_update.custom.upload.update_check=--nocheck
+dashpro.menu.check_update.check.build.use_hologram_cloud=-DUSE_HOLOGRAM_CLOUD
+dashpro.menu.check_update.skip.build.use_hologram_cloud=-DUSE_HOLOGRAM_CLOUD
+dashpro.menu.check_update.custom.build.use_hologram_cloud=
+dashpro.build.spi_selection=
 
 dashpro_beta.menu.cpu_speed.speed120=120MHz
 dashpro_beta.menu.cpu_speed.speed100=100MHz
 dashpro_beta.menu.cpu_speed.speed48=48MHz
 dashpro_beta.menu.check_update.check=Check
 dashpro_beta.menu.check_update.skip=Skip
+dashpro_beta.menu.check_update.custom=Custom Firmware
 dashpro_beta.name=DashPro Beta
 dashpro_beta.build.mcu=cortex-m4
 dashpro_beta.build.board=DASHPRO
@@ -67,5 +84,10 @@ dashpro_beta.upload.maximum_size=1014764
 dashpro_beta.menu.cpu_speed.speed48.build.clock_setup=-DCLOCK_SETUP=0
 dashpro_beta.menu.cpu_speed.speed100.build.clock_setup=-DCLOCK_SETUP=1
 dashpro_beta.menu.cpu_speed.speed120.build.clock_setup=-DCLOCK_SETUP=2
-dashpro.menu.check_update.check.upload.update_check=
-dashpro.menu.check_update.skip.upload.update_check=--nocheck
+dashpro_beta.menu.check_update.check.upload.update_check=
+dashpro_beta.menu.check_update.skip.upload.update_check=--nocheck
+dashpro_beta.menu.check_update.custom.upload.update_check=--nocheck
+dashpro_beta.menu.check_update.check.build.use_hologram_cloud=-DUSE_HOLOGRAM_CLOUD
+dashpro_beta.menu.check_update.skip.build.use_hologram_cloud=-DUSE_HOLOGRAM_CLOUD
+dashpro_beta.menu.check_update.custom.build.use_hologram_cloud=
+dashpro_beta.build.spi_selection=

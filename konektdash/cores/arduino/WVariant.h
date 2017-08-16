@@ -2,7 +2,7 @@
   WVariant.h - Port type definitions for the Konekt Dash and
   Konekt Dash Pro family of products.
 
-  http://konekt.io
+  https://hologram.io
 
   Copyright (c) 2015 Konekt, Inc.  All rights reserved.
 
@@ -27,6 +27,7 @@
 
 #define DASH_LED        (25)
 #define DASH_WAKE       (7)
+#define LED_BUILTIN     DASH_LED
 
 #define SPI_INSTANCE    SPI0
 #define SPI_GATE        kSimClockGateSpi0

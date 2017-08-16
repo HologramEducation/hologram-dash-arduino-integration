@@ -2,7 +2,7 @@
   wiring_analog.c - Wiring compatibility layer analog-mode
   functions with mods for Konekt Dash and Konekt Dash Pro
 
-  http://konekt.io
+  https://hologram.io
 
   Copyright (c) 2015 Konekt, Inc.  All rights reserved.
 
@@ -214,11 +214,11 @@ void analogWrite( uint32_t ulPin, uint32_t ulValue )
     if(IO_NOT_PWM(ulPin))
     {
         pinMode(ulPin, OUTPUT);
-    	ulValue = mapResolution(ulValue, _writeResolution, 8);
-    	if (ulValue < 128)
-    		digitalWrite(ulPin, LOW);
-    	else
-    		digitalWrite(ulPin, HIGH);
+        ulValue = mapResolution(ulValue, _writeResolution, 8);
+        if (ulValue < 128)
+            digitalWrite(ulPin, LOW);
+        else
+            digitalWrite(ulPin, HIGH);
     }
     else if(PINS_PWM_DAC(ulPin))
     {

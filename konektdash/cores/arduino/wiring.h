@@ -24,6 +24,14 @@ extern "C" {
 
 extern void init(void);
 
+extern uint8_t digitalPinToBitMask(uint8_t pin);
+
+extern uint8_t digitalPinToPort(uint8_t pin);
+
+extern volatile uint32_t* portInputRegister(uint8_t port);
+
+extern volatile uint32_t* portOutputRegister(uint8_t port);
+
 #ifdef __cplusplus
 }
 #endif

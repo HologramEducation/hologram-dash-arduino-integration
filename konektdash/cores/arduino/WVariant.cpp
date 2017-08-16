@@ -257,6 +257,7 @@ void wvariant_init(void)
     load_sn(SIM_UIDML, &USB_STR_SERIAL_NUMBER[34]);
     load_sn(SIM_UIDL, &USB_STR_SERIAL_NUMBER[50]);
 
+    NVIC_SetPriority (SysTick_IRQn, 0);
     NVIC_SetPriority(UART0_RX_TX_IRQn, 2);
     NVIC_SetPriority(UART1_RX_TX_IRQn, 1);
     NVIC_SetPriority(UART2_RX_TX_IRQn, 3);
@@ -267,6 +268,10 @@ void wvariant_init(void)
     NVIC_SetPriority(PIT2_IRQn, 5);
     NVIC_SetPriority(PIT3_IRQn, 7);
     NVIC_SetPriority(RTC_IRQn, 6);
+    NVIC_SetPriority(FTM0_IRQn, 9);
+    NVIC_SetPriority(FTM1_IRQn, 9);
+    NVIC_SetPriority(FTM2_IRQn, 9);
+    NVIC_SetPriority(FTM3_IRQn, 9);
     NVIC_SetPriority(PORTA_IRQn, 12);
     NVIC_SetPriority(PORTB_IRQn, 12);
     NVIC_SetPriority(PORTC_IRQn, 12);
@@ -280,7 +285,9 @@ void wvariant_init(void)
     FuelGauge.quickStart();
     Charger.beginAutoPercentage(20, 98);
     SerialSystem.begin(115200);
+#ifdef USE_HOLOGRAM_CLOUD
     HologramCloud.begin();
+#endif
 }
 
 #ifdef __cplusplus

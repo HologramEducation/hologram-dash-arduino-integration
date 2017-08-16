@@ -68,12 +68,57 @@ void cloud_sms(const String &sender, const rtc_datetime_t &timestamp, const Stri
   }
 }
 
+#define SIZE_INBOUND 4096
+char buffer_inbound[SIZE_INBOUND];
+
+void cloud_inbound(int length) {
+  buffer_inbound[length] = 0; //NULL terminate the data for printing as a String
+
+  Serial.print("New inbound data, ");
+  Serial.print(length);
+  Serial.println(" bytes: ");
+  Serial.println(buffer_inbound);
+}
+
+void cloud_notify(cloud_event e) {
+  switch(e) {
+    case CLOUD_EVENT_DISCONNECTED:
+      Serial.println("Disconnected from Cloud");
+      break;
+    case CLOUD_EVENT_UNREGISTERED:
+      Serial.println("Unregistered from Network");
+      break;
+    case CLOUD_EVENT_REGISTERED:
+      Serial.println("Registered on Network");
+      break;
+  }
+}
+
+void cloud_location(const rtc_datetime_t &timestamp, const String &lat, const String &lon, int altitude, int uncertainty) {
+  Serial.print("Location: ");
+  Serial.println(timestamp);
+  Serial.print(lat);
+  Serial.print(",");
+  Serial.println(lon);
+  Serial.print("Within ");
+  Serial.print(uncertainty);
+  Serial.println(" meters");
+  Serial.print("Altitude: ");
+  Serial.print(altitude);
+  Serial.println(" meters");
+}
+
 void setup() {
   Serial.begin();                                       //Start USB Serial
   DashReadEvalPrint.begin();                            //Initialize ReadEvalPrint
   Clock.attachAlarmInterrupt(alarm_handler);            //Handle RTC alarm
   Dash.attachTimer(timer_handler);                      //Handle timer expiration
   HologramCloud.attachHandlerSMS(cloud_sms);            //Handle received SMS
+  HologramCloud.attachHandlerInbound(cloud_inbound,
+                                     buffer_inbound,
+                                     SIZE_INBOUND-1);   //Handle received data message
+  HologramCloud.attachHandlerNotify(cloud_notify);      //Handle event notifications from cloud
+  HologramCloud.attachHandlerLocation(cloud_location);  //Handle location data from cloud
 }
 
 void loop() {

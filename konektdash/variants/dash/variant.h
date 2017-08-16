@@ -105,12 +105,26 @@
 #define SPI_SCK             13
 #define SPI_SOUT            11
 #define SPI_SIN             12
-
-#define ALT_SPI
+#define SPI_SS              10
 
 #define ALT_SPI_SCK         13
 #define ALT_SPI_SOUT        30
 #define ALT_SPI_SIN         31
+#define ALT_SPI_SS          33
+
+#ifdef ALT_SPI
+#define MOSI                ALT_SPI_SOUT
+#define MISO                ALT_SPI_SIN
+#define SCK                 ALT_SPI_SCK
+#define SS                  ALT_SPI_SS
+#else
+#define MOSI                SPI_SOUT
+#define MISO                SPI_SIN
+#define SCK                 SPI_SCK
+#define SS                  SPI_SS
+#endif
+
+#define BOARD_SPI_DEFAULT_SS    SS
 
 #define USB_STR_PRODUCT_SIZE  (22)
 

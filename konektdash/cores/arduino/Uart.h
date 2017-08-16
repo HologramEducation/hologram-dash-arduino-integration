@@ -39,8 +39,8 @@ class Uart : public HardwareSerial
 public:
     Uart(UART_Type * instance, sim_clock_gate_name_t gate_name, uint32_t clock,
         IRQn_Type irqNumber, uint32_t rx, uint32_t tx);
-    void begin(unsigned long baudRate); //(8N1 only) TODO add config params
-    void begin(unsigned long baudrate, uint16_t config) {begin(baudrate);}
+    void begin(unsigned long baudRate);
+    void begin(unsigned long baudrate, uint16_t config);
     void flush();
     void IrqHandler();
     size_t write(const uint8_t data);
@@ -61,4 +61,6 @@ protected:
     IRQn_Type irqNumber;
     uint32_t rx;
     uint32_t tx;
+    bool singleWire;
+    bool parity;
 };

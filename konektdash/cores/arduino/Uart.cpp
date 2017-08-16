@@ -66,21 +66,49 @@ int Uart::read()
 
 void Uart::begin(uint32_t baudrate)
 {
+    begin(baudrate, SERIAL_8N1);
+}
+
+void Uart::begin(unsigned long baudrate, uint16_t config)
+{
+    singleWire = (config & HARDSER_DUPLEX_MASK) == HARDSER_DUPLEX_HALF;
+
     SIM_HAL_EnableClock(SIM, gate_name);
 
-    PORT_CLOCK_ENABLE(rx);
+    if(!singleWire) {
+        PORT_CLOCK_ENABLE(rx);
+        PORT_SET_MUX_UART(rx);
+    }
+
     PORT_CLOCK_ENABLE(tx);
-    PORT_SET_MUX_UART(rx);
     PORT_SET_MUX_UART(tx);
 
 #if FSL_FEATURE_SOC_UART_COUNT
     UART_HAL_Init(instance);
     UART_HAL_SetBaudRate(instance, clock, baudrate);
     UART_HAL_SetBitCountPerChar(instance, kUart8BitsPerChar);
-    UART_HAL_SetParityMode(instance, kUartParityDisabled);
+
+    uart_parity_mode_t p = kUartParityDisabled;
+    switch(config & HARDSER_PARITY_MASK) {
+        case HARDSER_PARITY_EVEN: p = kUartParityEven; break;
+        case HARDSER_PARITY_ODD: p = kUartParityOdd; break;
+        case HARDSER_PARITY_NONE:
+        default: p = kUartParityDisabled; break;
+    }
+    parity = (p != kUartParityDisabled);
+    UART_HAL_SetParityMode(instance, p);
+
 #if FSL_FEATURE_UART_HAS_STOP_BIT_CONFIG_SUPPORT
-    UART_HAL_SetStopBitCount(instance, kUartOneStopBit);
+    UART_HAL_SetStopBitCount(instance,
+        (config & HARDSER_STOP_BIT_MASK) == HARDSER_STOP_BIT_2 ?
+        kUartTwoStopBit : kUartOneStopBit);
 #endif
+
+    if(singleWire) {
+        UART_HAL_SetLoopCmd(instance, true);
+        UART_HAL_SetReceiverSource(instance, kUartSingleWire);
+        UART_HAL_SetTransmitterDir(instance, kUartSinglewireTxdirIn);
+    }
 
     UART_HAL_SetIntMode(instance, kUartIntRxDataRegFull, true);
     NVIC_EnableIRQ(irqNumber);
@@ -116,8 +144,13 @@ void Uart::waitToEmpty()
 void Uart::IrqHandler()
 {
 #if FSL_FEATURE_SOC_UART_COUNT
-    while(UART_RD_S1_RDRF(instance))
-        rxBuffer.store_char(UART_RD_D(instance));
+    while(UART_RD_S1_RDRF(instance)) {
+        uint8_t b = UART_RD_D(instance);
+        if(parity)
+            rxBuffer.store_char(b&0x7F);
+        else
+            rxBuffer.store_char(b);
+    }
 #endif
 }
 
@@ -133,7 +166,23 @@ size_t Uart::write(const uint8_t data)
             return 0;
     }
 
+    if(singleWire) {
+        UART_HAL_SetTransmitterDir(instance, kUartSinglewireTxdirOut);
+    }
+
     UART_HAL_Putchar(instance, data);
+
+    if(singleWire) {
+        uint32_t start = millis();
+        while (!UART_BRD_S1_TC(instance))
+        {
+            if(millis() - start > 10) {
+                UART_HAL_SetTransmitterDir(instance, kUartSinglewireTxdirIn);
+                return 0;
+            }
+        }
+        UART_HAL_SetTransmitterDir(instance, kUartSinglewireTxdirIn);
+    }
     return 1;
 #endif
 

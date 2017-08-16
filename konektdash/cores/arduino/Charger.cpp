@@ -46,7 +46,7 @@ bool DashCharger::begin()
 
     if(controllable) {
         enable(false);
-        delay(3);
+        Dash.snooze(3);
         enable(true);
     }
 
