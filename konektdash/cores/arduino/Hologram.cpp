@@ -119,10 +119,12 @@ void Hologram::onURC(const char* urc) {
     } else if(strncmp(urc, "+HHREGISTERED: ", 15) == 0) {
         int status = 99;
         if(sscanf(urc, "+HHREGISTERED: %d", &status) == 1) {
-            if(status == 0)
-                event_callback(CLOUD_EVENT_UNREGISTERED);
-            else if(status == 1)
-                event_callback(CLOUD_EVENT_REGISTERED);
+            if(event_callback) {
+                if(status == 0)
+                    event_callback(CLOUD_EVENT_UNREGISTERED);
+                else if(status == 1)
+                    event_callback(CLOUD_EVENT_REGISTERED);
+            }
         }
     } else if(strncmp(urc, "+HINFO: ", 8) == 0) {
         protocol_version = 1;
