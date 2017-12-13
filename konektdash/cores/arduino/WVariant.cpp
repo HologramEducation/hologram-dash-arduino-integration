@@ -167,12 +167,12 @@ void PIT0_IRQHandler(void)
 
 void PIT1_IRQHandler(void)
 {
-    Dash.timerExpired(1);
+    Dash.timerExpiration(1);
 }
 
 void PIT2_IRQHandler(void)
 {
-    Dash.timerExpired(2);
+    Dash.timerExpiration(2);
 }
 
 void PIT3_IRQHandler(void)

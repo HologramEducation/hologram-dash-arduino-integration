@@ -71,9 +71,9 @@ void Spi::begin()
 void Spi::end()
 {
     DSPI_HAL_Init(instance);
-    PORT_SET_MUX_DISABLED(sin);
-    PORT_SET_MUX_DISABLED(sout);
-    PORT_SET_MUX_DISABLED(sck);
+    pinMode(sin, DISABLE);
+    pinMode(sout, DISABLE);
+    pinMode(sck, DISABLE);
     SIM_HAL_DisableClock(SIM, gate_name);
 }
 

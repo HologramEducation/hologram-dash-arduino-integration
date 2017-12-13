@@ -54,6 +54,7 @@ public:
     void startTimerMS(uint32_t interval_ms, bool repeat=false);
     void startTimerSec(uint32_t interval_sec, bool repeat=false);
     void stopTimer();
+    bool timerExpired();
 
     void snooze(uint32_t ms);
     void sleep();
@@ -75,7 +76,7 @@ public:
 
     void pulseInterrupt();
     void wakeFromSleep();
-    void timerExpired(uint32_t source);
+    void timerExpiration(uint32_t source);
 
     int bootVersionNumber();
     String bootVersion();

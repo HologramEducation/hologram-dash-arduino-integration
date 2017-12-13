@@ -42,6 +42,69 @@ bool ReadEvalPrintBaseProvider::event(ReadEvalPrintEvent &event, Print &port)
     return false;
 }
 
+SerialMirror::SerialMirror()
+: portcount(0)
+{}
+
+bool SerialMirror::add(HardwareSerial &serialPort) {
+    if(portcount >= 3) return false;
+    ports[portcount++] = &serialPort;
+}
+
+void SerialMirror::begin(unsigned long baudrate) {
+    for(int i=0; i<portcount; i++)
+        ports[i]->begin(baudrate);
+}
+
+void SerialMirror::begin(unsigned long baudrate, uint16_t config) {
+    for(int i=0; i<portcount; i++)
+        ports[i]->begin(baudrate, config);
+}
+
+void SerialMirror::end() {
+    for(int i=0; i<portcount; i++)
+        ports[i]->end();
+}
+
+int SerialMirror::available() {
+    int max = 0;
+    for(int i=0; i<portcount; i++) {
+        int a = ports[i]->available();
+        if(a > max)
+            max = a;
+    }
+    return max;
+}
+
+int SerialMirror::peek() {
+    for(int i=0; i<portcount; i++) {
+        int p = ports[i]->peek();
+        if(p != -1)
+            return p;
+    }
+    return -1;
+}
+
+int SerialMirror::read() {
+    for(int i=0; i<portcount; i++) {
+        int r = ports[i]->read();
+        if(r != -1)
+            return r;
+    }
+    return -1;
+}
+
+void SerialMirror::flush() {
+    for(int i=0; i<portcount; i++)
+        ports[i]->flush();
+}
+
+size_t SerialMirror::write(uint8_t data) {
+    for(int i=0; i<portcount; i++)
+        ports[i]->write(data);
+    return 1;
+}
+
 const char *GREETING = "type 'help' for commands, 'quit' to exit";
 const char *PROMPT = "> ";
 

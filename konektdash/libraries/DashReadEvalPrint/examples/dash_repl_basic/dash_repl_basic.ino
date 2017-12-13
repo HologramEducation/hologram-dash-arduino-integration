@@ -22,6 +22,8 @@
 
 #include <DashReadEvalPrint.h>
 
+SerialMirror Mirror;
+
 //send a notifcation message on RTC alarm
 //trigger the alarm to go off in 5 seconds with the command:
 //alarm seconds 5
@@ -34,9 +36,9 @@ void alarm_handler(void)
   HologramCloud.println(Clock.currentDateTime());
   HologramCloud.attachTag("alarm");
   if(HologramCloud.sendMessage())
-    Serial.println("Alarm notification sent");
+    Mirror.println("Alarm notification sent");
   else
-    Serial.println("Alarm notification failed");
+    Mirror.println("Alarm notification failed");
 }
 
 //Toggle the LED on timer expiration
@@ -51,20 +53,20 @@ void timer_handler(void)
 //Send a message to the cloud that an SMS was received with the sender number
 //as the content and the tag SMSRX
 void cloud_sms(const String &sender, const rtc_datetime_t &timestamp, const String &message) {
-  Serial.println("CLOUD SMS RECEIVED:");
-  Serial.print("SMS SENDER: ");
-  Serial.println(sender);
-  Serial.print("SMS TIMESTAMP: ");
-  Serial.println(timestamp);
-  Serial.println("SMS TEXT: ");
-  Serial.println(message);
+  Mirror.println("CLOUD SMS RECEIVED:");
+  Mirror.print("SMS SENDER: ");
+  Mirror.println(sender);
+  Mirror.print("SMS TIMESTAMP: ");
+  Mirror.println(timestamp);
+  Mirror.println("SMS TEXT: ");
+  Mirror.println(message);
 
   if(HologramCloud.sendMessage(sender, "SMSRX")) {
-    Serial.println("SMS received message sent to cloud.");
+    Mirror.println("SMS received message sent to cloud.");
   } else {
-    Serial.println("Notification send failed.");
-    Serial.println("Check failure reason by typing:");
-    Serial.println("cloud status");
+    Mirror.println("Notification send failed.");
+    Mirror.println("Check failure reason by typing:");
+    Mirror.println("cloud status");
   }
 }
 
@@ -74,43 +76,73 @@ char buffer_inbound[SIZE_INBOUND];
 void cloud_inbound(int length) {
   buffer_inbound[length] = 0; //NULL terminate the data for printing as a String
 
-  Serial.print("New inbound data, ");
-  Serial.print(length);
-  Serial.println(" bytes: ");
-  Serial.println(buffer_inbound);
+  Mirror.print("New inbound data, ");
+  Mirror.print(length);
+  Mirror.println(" bytes: ");
+  Mirror.println(buffer_inbound);
 }
 
 void cloud_notify(cloud_event e) {
   switch(e) {
+    case CLOUD_EVENT_CONNECTED:
+      Mirror.println("Connected to Cloud");
+      break;
     case CLOUD_EVENT_DISCONNECTED:
-      Serial.println("Disconnected from Cloud");
+      Mirror.println("Disconnected from Cloud");
       break;
     case CLOUD_EVENT_UNREGISTERED:
-      Serial.println("Unregistered from Network");
+      Mirror.println("Unregistered from Network");
       break;
     case CLOUD_EVENT_REGISTERED:
-      Serial.println("Registered on Network");
+      Mirror.println("Registered on Network");
       break;
   }
 }
 
 void cloud_location(const rtc_datetime_t &timestamp, const String &lat, const String &lon, int altitude, int uncertainty) {
-  Serial.print("Location: ");
-  Serial.println(timestamp);
-  Serial.print(lat);
-  Serial.print(",");
-  Serial.println(lon);
-  Serial.print("Within ");
-  Serial.print(uncertainty);
-  Serial.println(" meters");
-  Serial.print("Altitude: ");
-  Serial.print(altitude);
-  Serial.println(" meters");
+  Mirror.print("Location: ");
+  Mirror.println(timestamp);
+  Mirror.print(lat);
+  Mirror.print(",");
+  Mirror.println(lon);
+  Mirror.print("Within ");
+  Mirror.print(uncertainty);
+  Mirror.println(" meters");
+  Mirror.print("Altitude: ");
+  Mirror.print(altitude);
+  Mirror.println(" meters");
+}
+
+void charge_notify(charge_status status) {
+  switch(status) {
+    case CHARGE_STATUS_FAULT:
+      Mirror.println("Charge Fault!!!");
+      break;
+    case CHARGE_STATUS_CHARGING:
+      Mirror.println("Charging");
+      break;
+    case CHARGE_STATUS_LOW_BATTERY:
+      Mirror.print("Low battery");
+      break;
+    case CHARGE_STATUS_CHARGED:
+      Mirror.println("Charged");
+      break;
+    case CHARGE_STATUS_NO_BATTERY:
+      Mirror.println("No battery");
+      break;
+    case CHARGE_STATUS_NO_INPUT:
+      Mirror.println("No input power");
+      break;
+  }
 }
 
 void setup() {
-  Serial.begin();                                       //Start USB Serial
+  Mirror.add(Serial);
+  Mirror.add(Serial0);
+  Mirror.add(Serial2);
+  Mirror.begin(115200);
   DashReadEvalPrint.begin();                            //Initialize ReadEvalPrint
+  HologramCloud.attachHandlerCharge(charge_notify);     //Handle charge state changes
   Clock.attachAlarmInterrupt(alarm_handler);            //Handle RTC alarm
   Dash.attachTimer(timer_handler);                      //Handle timer expiration
   HologramCloud.attachHandlerSMS(cloud_sms);            //Handle received SMS
@@ -123,5 +155,5 @@ void setup() {
 
 void loop() {
   //open the Serial Monitor and type help for a list of commands
-  DashReadEvalPrint.run(Serial);                        //Run the interpreter using USB Serial
+  DashReadEvalPrint.run(Mirror);                        //Run the interpreter using USB Serial
 }

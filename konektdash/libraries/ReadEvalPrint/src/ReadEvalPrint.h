@@ -75,6 +75,26 @@ protected:
     const char* header;
 };
 
+class SerialMirror : public HardwareSerial
+{
+public:
+    SerialMirror();
+    bool add(HardwareSerial &serialPort);
+    virtual void begin(unsigned long);
+    virtual void begin(unsigned long baudrate, uint16_t config);
+    virtual void end();
+    virtual int available(void);
+    virtual int peek(void);
+    virtual int read(void);
+    virtual void flush(void);
+    virtual size_t write(uint8_t);
+    using Print::write; // pull in write(str) and write(buf, size) from Print
+    virtual operator bool() { return true; }
+protected:
+    int portcount;
+    HardwareSerial *ports[3];
+};
+
 class ReadEvalPrintLoop : public ReadEvalPrintEvent, ReadEvalPrintProvider
 {
 public:

@@ -29,31 +29,48 @@
 #define MAX_TOPIC_SIZE 63
 #define MAX_TOPICS 10
 
-#define CLOUD_DISCONNECTED      0
+#define CLOUD_REGISTERED        0
 #define CLOUD_CONNECTED         1
 #define CLOUD_ERR_UNAVAILABLE   2
 #define CLOUD_ERR_SIM           3
 #define CLOUD_ERR_UNREGISTERED  4
 #define CLOUD_ERR_SIGNAL        5
 #define CLOUD_ERR_CONNECT       12
+#define CLOUD_ERR_MODEM_OFF     15
 
 typedef enum {
     CLOUD_EVENT_NONE            = 0,
     CLOUD_EVENT_DISCONNECTED    = 1,
     CLOUD_EVENT_UNREGISTERED    = 2,
     CLOUD_EVENT_REGISTERED      = 3,
+    CLOUD_EVENT_CONNECTED       = 4,
+    CLOUD_EVENT_RESET           = 99,
 }cloud_event;
+
+typedef enum {
+    CHARGE_STATUS_FAULT         = 0,
+    CHARGE_STATUS_INVALID1      = 1,
+    CHARGE_STATUS_CHARGING      = 2,
+    CHARGE_STATUS_LOW_BATTERY   = 3,
+    CHARGE_STATUS_CHARGED       = 4,
+    CHARGE_STATUS_INVALID5      = 5,
+    CHARGE_STATUS_NO_BATTERY    = 6,
+    CHARGE_STATUS_NO_INPUT      = 7,
+}charge_status;
 
 class Hologram : public Print, public URCReceiver {
 public:
     void begin();
     void end();
 
-    bool connect(bool reconnect=false);
+    bool connect();
     bool disconnect();
     int getConnectionStatus();
+    bool isConnected();
+    bool isRegistered();
     int getSignalStrength();
     bool getNetworkTime(rtc_datetime_t &dt);
+    bool getUTC(rtc_datetime_t &dt);
 
     void powerUp();
     void powerDown();
@@ -66,10 +83,18 @@ public:
     int checkSMS();
 
     String getICCID();
+    String getIMEI();
     String getNetworkOperator();
     bool getLocation(int accuracy=10, int maxseconds=360);
 
+    int getChargeState();
+
     bool enterPassthrough();
+
+    bool setRGB(String name);
+    bool setRGB(int hexcode);
+    bool offRGB() {return setRGB("BLACK");}
+    bool setLED(bool on);
 
     bool sendMessage(const char* content);
     bool sendMessage(const char* content, const char* topic);
@@ -81,6 +106,9 @@ public:
     bool sendMessage(const char* content, const String &topic);
     bool sendMessage(const uint8_t* content, uint32_t length, const String &topic);
 
+    int sendTimeout();
+    int sendDelay(bool ok, int milliseconds);
+
     //deprecated
     #define attachTag attachTopic
 
@@ -91,20 +119,23 @@ public:
 
     int listen(int port);
 
+    void resetSystem();
+
     void attachHandlerSMS(void (*sms_handler)(const String &sender, const rtc_datetime_t &timestamp, const String &message));
     void attachHandlerInbound(void (*inbound_handler)(int length), void *buffer, int length);
     void attachHandlerNotify(void (*event_handler)(cloud_event e));
     void attachHandlerLocation(void (*location_handler)(const rtc_datetime_t &timestamp, const String &lat, const String &lon, int altitude, int uncertainty));
+    void attachHandlerCharge(void (*charge_handler)(charge_status status));
     void onURC(const char* urc);
 
 protected:
     typedef enum {
         MODEM_STATE_UNKNOWN,
+        MODEM_STATE_SHUTDOWN,
+        MODEM_STATE_DISCONNECTED,
         MODEM_STATE_READY,
-        MODEM_STATE_OFF,
     }state_modem;
 
-    void resetSystem();
     bool sendFinalize(bool success);
     void resetBuffer();
     void checkIncoming();
@@ -123,6 +154,7 @@ protected:
     void (*inbound_callback)(int length);
     void (*event_callback)(cloud_event e);
     void (*location_callback)(const rtc_datetime_t &timestamp, const String &lat, const String &lon, int altitude, int uncertainty);
+    void (*charge_callback)(charge_status status);
     uint8_t *inbound_buffer;
     int inbound_length;
     uint8_t message_buffer[MAX_MESSAGE_SIZE];
@@ -130,9 +162,10 @@ protected:
     char topics[MAX_TOPICS][MAX_TOPIC_SIZE+1];
     uint32_t num_topics;
     bool ready;
-    bool auto_reconnect;
     state_modem modem_state;
     bool message_attempted;
     int32_t protocol_version;
     int inbound_pending;
 };
+
+extern ArduinoModem modem;

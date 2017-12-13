@@ -73,7 +73,7 @@ void ArduinoModem::debugout(int i) {
     }
 }
 
-bool ArduinoModem::modemavailable() {
+int ArduinoModem::modemavailable() {
     return uart->available();
 }
 
@@ -88,5 +88,3 @@ uint8_t ArduinoModem::modempeek() {
 uint32_t ArduinoModem::msTick() {
     return millis();
 }
-
-ArduinoModem modem;

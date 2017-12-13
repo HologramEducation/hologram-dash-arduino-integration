@@ -37,7 +37,7 @@ protected:
     virtual void debugout(const char* str);
     virtual void debugout(char c);
     virtual void debugout(int i);
-    virtual bool modemavailable();
+    virtual int modemavailable();
     virtual uint8_t modemread();
     virtual uint8_t modempeek();
     virtual uint32_t msTick();
@@ -45,5 +45,3 @@ protected:
     Stream *uart;
     Stream *debug;
 };
-
-extern ArduinoModem modem;

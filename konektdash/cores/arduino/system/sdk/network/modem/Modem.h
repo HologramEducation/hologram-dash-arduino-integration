@@ -25,6 +25,7 @@
 #include <cstddef>
 
 typedef enum {
+    MODEM_BUSY = -4,
     MODEM_NO_MATCH = -3,
     MODEM_ERROR = -2,
     MODEM_TIMEOUT = -1,
@@ -43,6 +44,8 @@ public:
     modem_result command(const char* cmd, const char* expected, uint32_t timeout=1000, uint32_t retries=0, bool query=false);
     modem_result set(const char* cmd, const char* value, uint32_t timeout=1000, uint32_t retries=0);
     modem_result set(const char* cmd, const char* value, const char* expected, uint32_t timeout=1000, uint32_t retries=0);
+    modem_result asyncSet(const char* cmd, const char* value, uint32_t timeout=1000);
+    modem_result asyncStatus();
     void startSet(const char* cmd);
     void appendSet(int value);
     void appendSet(const char* value);
@@ -59,6 +62,7 @@ public:
     modem_result query(const char* cmd, const char* expected, uint32_t timeout=1000, uint32_t retries=0) {
         return command(cmd, expected, timeout, retries, true);
     }
+    uint32_t timeoutCount();
     const char* lastResponse();
     uint32_t numResponses();
     void checkURC();
@@ -91,12 +95,12 @@ protected:
     virtual void debugout(const char* str){}
     virtual void debugout(char c){}
     virtual void debugout(int i){}
-    virtual bool modemavailable()=0;
+    virtual int modemavailable()=0;
     virtual uint8_t modemread()=0;
     virtual uint8_t modempeek()=0;
     void modemwrite(const char* cmd, cmd_flags flags = CMD_NONE);
     bool findline(char *buffer, uint32_t timeout, uint32_t startMillis);
-    modem_result processResponse(uint32_t timeout, const char* cmd);
+    modem_result processResponse(uint32_t timeout, const char* cmd, int minResponse=0);
     int strncmpci(const char* str1, const char* str2, size_t num);
     bool commandResponseMatch(const char* cmd, const char* response, int num);
 
@@ -107,4 +111,8 @@ protected:
     char okbuffer[512];
     char *valoffset;
     uint32_t numresponses;
+    modem_result async_state;
+    uint32_t async_start;
+    uint32_t async_timeout;
+    uint32_t timeout_count;
 };

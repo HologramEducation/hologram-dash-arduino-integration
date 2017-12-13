@@ -71,9 +71,13 @@ static const ReadEvalPrintCommand CLOUD[] = {
     {2, 0, "shutdown the modem",                        "cloud", "off"},                            //6
     {2, 0, "cloud version number",                      "cloud", "version"},                        //7
     {2, 0, "ICCID of the SIM card",                     "cloud", "iccid"},                          //8
-    {2, 0, "current network operator",                  "cloud", "operator"},                       //9
-    {3, 0, "start inbound connection listener",         "cloud", "listen", "<port>"},               //10
-    {2, 0, "get approximate location",                  "cloud", "location"},                       //11
+    {2, 0, "IMEI of the SIM card",                      "cloud", "imei"},                           //9
+    {2, 0, "current network operator",                  "cloud", "operator"},                       //10
+    {3, 0, "start inbound connection listener",         "cloud", "listen", "<port>"},               //11
+    {2, 0, "get approximate location",                  "cloud", "location"},                       //12
+    {2, 0, "reset the system processor",                "cloud", "reset"},                          //13
+    {3, 0, "turn on the System LED",                    "cloud", "led", "on"},                      //14
+    {3, 0, "turn off the System LED",                   "cloud", "led", "off"},                     //15
 };
 
 const ReadEvalPrintCommand* DashCloudProvider::getTable(uint32_t *num_commands)
@@ -84,10 +88,11 @@ const ReadEvalPrintCommand* DashCloudProvider::getTable(uint32_t *num_commands)
 
 void DashCloudProvider::printStatus(Print &port) {
     switch(HologramCloud.getConnectionStatus()) {
-        case CLOUD_DISCONNECTED: port.println("Disconnected."); break;
+        case CLOUD_REGISTERED: port.println("Registered."); break;
         case CLOUD_CONNECTED: port.println("Connected."); break;
         case CLOUD_ERR_SIM: port.println("Error. Check SIM card inserted properly and power cycle."); break;
         case CLOUD_ERR_UNREGISTERED: port.println("Not registered on network."); break;
+        case CLOUD_ERR_MODEM_OFF: port.println("Modem disconnected."); break;
         case CLOUD_ERR_SIGNAL: port.println("No signal. Check antenna."); break;
         case CLOUD_ERR_CONNECT: port.println("No connection. Check if SIM is active."); break;
         default: port.print("Unknown ");break;
@@ -100,7 +105,6 @@ bool DashCloudProvider::event(ReadEvalPrintEvent &event, Print &port)
     case 0: //cloud connect
         port.print("Connecting... ");
         if (HologramCloud.connect()) {
-            port.println("Connected!");
             break;
         }
         port.println("Failed");
@@ -108,9 +112,11 @@ bool DashCloudProvider::event(ReadEvalPrintEvent &event, Print &port)
         break;
     case 1: //cloud disconnect
         port.print("Disconnecting... ");
-        port.println(HologramCloud.disconnect() ? "Done" : "Fail");
-        break;
-
+        if (HologramCloud.disconnect()) {
+            break;
+        }
+        port.println("Failed");
+        printStatus(port);
     case 2: //cloud send
     {
         uint32_t numtopics = event.numArguments() - 3;
@@ -153,11 +159,15 @@ bool DashCloudProvider::event(ReadEvalPrintEvent &event, Print &port)
         port.println(HologramCloud.getICCID());
         break;
 
-    case 9: //cloud operator
+    case 9: //cloud imei
+        port.println(HologramCloud.getIMEI());
+        break;
+
+    case 10: //cloud operator
         port.println(HologramCloud.getNetworkOperator());
         break;
 
-    case 10: //cloud listen port
+    case 11: //cloud listen port
         {
             int portnum = 0;
             if(event.tolong(2, &portnum)) {
@@ -173,7 +183,7 @@ bool DashCloudProvider::event(ReadEvalPrintEvent &event, Print &port)
         }
         break;
 
-    case 11: //cloud location
+    case 12: //cloud location
         {
             if(HologramCloud.getLocation()) {
                 port.println("Location requested. Response can take a few minutes.");
@@ -182,7 +192,23 @@ bool DashCloudProvider::event(ReadEvalPrintEvent &event, Print &port)
             }
         }
         break;
-
+    case 13: //cloud reset
+        HologramCloud.resetSystem();
+        break;
+    case 14: //cloud led on
+        if(HologramCloud.setLED(true)) {
+            port.println("LED on");
+        } else {
+            port.println("Failed");
+        }
+        break;
+    case 15: //cloud led off
+        if(HologramCloud.setLED(false)) {
+            port.println("LED off");
+        } else {
+            port.println("Failed");
+        }
+        break;
     default:
         return false;
     }
@@ -194,6 +220,9 @@ static const ReadEvalPrintCommand MODEM[] = {
     {3, 0, "send a query to the modem",                 "modem", "query", "<command>"},             //1
     {4, 0, "set a value on the modem",                  "modem", "set", "<command>", "<value>"},    //2
     {3, 0, "enter passthrough mode if command is 1",    "modem", "passthrough", "<command>"},       //3
+    {2, 0, "no response",                               "debug", "timeout"},
+    {3, 0, "OK response after delay",                   "debug", "delay", "<value>"},
+    {3, 0, "ERROR response after delay",                "debug", "delayerr", "<value>"},
 };
 
 const ReadEvalPrintCommand* DashModemProvider::getTable(uint32_t *num_commands)
@@ -258,6 +287,31 @@ bool DashModemProvider::event(ReadEvalPrintEvent &event, Print &port)
         }
         break;
     }
+    case 4:
+        {
+            port.print("Calling timeout... ");
+            int ret = HologramCloud.sendTimeout();
+            port.println(ret);
+        }
+        break;
+    case 5:
+        {
+            port.print("Calling delay... ");
+            int to = 0;
+            event.tolong(2, &to);
+            int ret = HologramCloud.sendDelay(true, to);
+            port.println(ret);
+        }
+        break;
+    case 6:
+        {
+            port.print("Calling delay error... ");
+            int to;
+            event.tolong(2, &to);
+            int ret = HologramCloud.sendDelay(false, to);
+            port.println(ret);
+        }
+        break;
     default:
         return false;
     }
@@ -271,6 +325,8 @@ static const ReadEvalPrintCommand LED[] = {
     {2, 0, "switch LED (on->off or off->on)",       "led", "toggle"},
     {3, 0, "set LED brightness to percent (1-100)", "led", "dim", "<percent>"},
     {4, 0, "LED blinks on ms, off ms",              "led", "pulse", "<on>", "<off>"},
+    {3, 0, "RGB HTML color name or 0xRRGGBB",       "rgb", "on", "<color>"},
+    {2, 0, "Turn off RGB",                          "rgb", "off"},
 };
 
 const ReadEvalPrintCommand* DashLEDProvider::getTable(uint32_t *num_commands)
@@ -331,6 +387,23 @@ bool DashLEDProvider::event(ReadEvalPrintEvent &event, Print &port)
             }
         }
         break;
+    case 6:
+        {
+            int v;
+            if(event.tolong(2, &v)) {
+                if(HologramCloud.setRGB(v))
+                    return true;
+            } else if(HologramCloud.setRGB(event.getArgument(2))) {
+                    return true;
+            }
+            return event.invalidParameter(2);
+        }
+    case 7:
+        if(HologramCloud.offRGB()) {
+            return true;
+        } else {
+            return event.invalidParameter(0);
+        }
     default:
         return false;
     }
@@ -420,13 +493,15 @@ static const ReadEvalPrintCommand CLOCK[] = {
     {2, 0, "check if the clock is running",     "clock", "running"},                                            //4
     {2, 0, "check if the clock was reset",      "clock", "reset"},                                              //5
     {2, 0, "synchronize with network time",     "clock", "sync"},                                               //6
-    {1, 0, "print the alarm state",             "alarm"},                                                       //7
-    {2, 0, "cancel the current alarm",          "alarm", "cancel"},                                             //8
-    {2, 6, "set the alarm",                     "alarm", "set", "[y]", "[mon]", "[d]", "[h]", "[min]", "[s]"},  //9
-    {3, 0, "set the alarm <seconds> from now",  "alarm", "seconds", "<seconds>"},                               //10
-    {3, 0, "set the alarm <minutes> from now",  "alarm", "minutes", "<minutes>"},                               //11
-    {3, 0, "set the alarm <hours> from now",    "alarm", "hours", "<hours>"},                                   //12
-    {3, 0, "set the alarm <days> from now",     "alarm", "days", "<days>"},                                     //13
+    {2, 0, "synchronize with UTC",              "clock", "utc"},                                                //7
+    {1, 0, "print the alarm state",             "alarm"},                                                       //8
+    {2, 0, "cancel the current alarm",          "alarm", "cancel"},                                             //9
+    {2, 6, "set the alarm",                     "alarm", "set", "[y]", "[mon]", "[d]", "[h]", "[min]", "[s]"},  //10
+    {3, 0, "set the alarm <seconds> from now",  "alarm", "seconds", "<seconds>"},                               //11
+    {3, 0, "set the alarm <minutes> from now",  "alarm", "minutes", "<minutes>"},                               //12
+    {3, 0, "set the alarm <hours> from now",    "alarm", "hours", "<hours>"},                                   //13
+    {3, 0, "set the alarm <days> from now",     "alarm", "days", "<days>"},                                     //14
+
 };
 
 const ReadEvalPrintCommand* DashClockProvider::getTable(uint32_t *num_commands) {
@@ -513,7 +588,6 @@ bool DashClockProvider::event(ReadEvalPrintEvent &event, Print &port) {
 
     case 6:
         //clock sync
-        rtc_datetime_t dt;
         if(HologramCloud.getNetworkTime(dt)) {
             Clock.setDateTime(dt);
             port.println(Clock.currentDateTime());
@@ -521,8 +595,16 @@ bool DashClockProvider::event(ReadEvalPrintEvent &event, Print &port) {
             port.println("Network time not available");
         }
         break;
-
-    case 7: //alarm
+    case 7:
+        //clock utc
+        if(HologramCloud.getUTC(dt)) {
+            Clock.setDateTime(dt);
+            port.println(Clock.currentDateTime());
+        } else {
+            port.println("Network time not available");
+        }
+        break;
+    case 8: //alarm
         if(Clock.alarmExpired()) {
             port.println("Alarm expired");
         } else {
@@ -546,12 +628,12 @@ bool DashClockProvider::event(ReadEvalPrintEvent &event, Print &port) {
         }
         break;
 
-    case 8:
+    case 9:
         Clock.cancelAlarm();
         port.println("Alarm canceled");
         break;
 
-    case 9: //Alarm set
+    case 10: //Alarm set
         if(parseDateTime(event, dt)) {
             if(!Clock.setAlarm(dt)) {
                 return event.invalidParameter(2, "Alarm cannot be in the past");
@@ -563,10 +645,10 @@ bool DashClockProvider::event(ReadEvalPrintEvent &event, Print &port) {
         break;
 
     //ALARM
-    case 13: alarm_mult*=24; //alarm days
-    case 12: alarm_mult*=60; //alarm hours
-    case 11: alarm_mult*=60; //alarm minutes
-    case 10: { //set alarm seconds
+    case 14: alarm_mult*=24; //alarm days
+    case 13: alarm_mult*=60; //alarm hours
+    case 12: alarm_mult*=60; //alarm minutes
+    case 11: { //set alarm seconds
         if(event.tolong(2, &v)) {
             Clock.setAlarmSecondsFromNow(v*alarm_mult);
         } else {
@@ -587,12 +669,14 @@ bool DashClockProvider::event(ReadEvalPrintEvent &event, Print &port) {
 static const ReadEvalPrintCommand CHARGER[] = {
     {2, 0, "print the battery percent remaining",       "battery", "percent"},
     {2, 0, "print the battery voltage in mV",           "battery", "voltage"},
+    {2, 0, "print battery status",                      "battery", "status"},
     {1, 0, "print if charger is enabled/disabled",      "charger"},
     {2, 0, "enable/disable the charger (if supported)", "charger", "<enable/disable>"},
     {2, 0, "quickstart the fuel gauge",                 "fuel", "quickstart"},
     {2, 0, "restart the fuel gauge",                    "fuel", "restart"},
     {2, 0, "put the fuel gauge to sleep",               "fuel", "sleep"},
     {2, 0, "wake the fuel gauge from sleep",            "fuel", "wake"},
+
 };
 
 const ReadEvalPrintCommand* DashChargerProvider::getTable(uint32_t *num_commands)
@@ -614,7 +698,34 @@ bool DashChargerProvider::event(ReadEvalPrintEvent &event, Print &port)
         port.print(Charger.batteryMillivolts());
         port.println("mV");
         break;
-    case 3:
+    case 2:
+        switch(HologramCloud.getChargeState()) {
+        case 0:
+            port.println("Charge Fault!!!");
+            break;
+        default:
+        case 1:
+        case 5:
+            port.println("Charge State Invalid!!!");
+            break;
+        case 2:
+            port.println("Charging");
+            break;
+        case 3:
+            port.println("Low battery");
+            break;
+        case 4:
+            port.println("Charged");
+            break;
+        case 6:
+            port.println("No battery");
+            break;
+        case 7:
+            port.println("No input power");
+            break;
+        }
+        break;
+    case 4:
         if(strcmp(event.getArgument(1), "enable") == 0) {
             Charger.enable(true);
         } else if(strcmp(event.getArgument(1), "disable") == 0) {
@@ -623,26 +734,26 @@ bool DashChargerProvider::event(ReadEvalPrintEvent &event, Print &port)
             return event.invalidParameter(1, "must be 'enable' or 'disable'");
         }
         //fallthrough
-    case 2:
+    case 3:
         port.print("Charger ");
         if(Charger.isControllable())
             port.println(Charger.isEnabled() ? "Enabled" : "Disabled");
         else
             port.println("is not controllable");
         break;
-    case 4:
+    case 5:
         FuelGauge.quickStart();
         port.println("Fuel Gauge Quickstart");
         break;
-    case 5:
+    case 6:
         FuelGauge.reset();
         port.println("Fuel Gauge Reset");
         break;
-    case 6:
+    case 7:
         FuelGauge.sleep();
         port.println("Fuel Gauge in Sleep");
         break;
-    case 7:
+    case 8:
         FuelGauge.wake();
         port.println("Fuel Gauge Awake");
         break;

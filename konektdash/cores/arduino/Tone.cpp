@@ -48,7 +48,7 @@ void noTone(uint8_t ulPin) {
 
     if(IO_NOT_PWM(ulPin)) return;
 
-    pinMode(ulPin, INPUT);
+    pinMode(ulPin, DISABLE);
 
     //treat as PWM
     sim_clock_gate_name_t gate = PWM_GATE(PINS_PWM_INST(ulPin));

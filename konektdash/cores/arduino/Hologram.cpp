@@ -46,6 +46,10 @@ void Hologram::attachHandlerLocation(void (*location_handler)(const rtc_datetime
     location_callback = location_handler;
 }
 
+void Hologram::attachHandlerCharge(void (*charge_handler)(charge_status status)) {
+    charge_callback = charge_handler;
+}
+
 void Hologram::begin() {
     end();
     // Serial2.begin(115200);
@@ -66,6 +70,7 @@ void Hologram::end() {
 }
 
 bool Hologram::enterPassthrough() {
+    powerUp();
     if(modem.set("+HPASSTHROUGH", "1") == MODEM_OK) {
         end();
         return true;
@@ -100,21 +105,21 @@ void Hologram::checkIncoming() {
 }
 
 void Hologram::onURC(const char* urc) {
-    if(strncmp(urc, "+HSMSRX: %d", 9) == 0) {
+    if(strncmp(urc, "+HHSMSRX: %d", 9) == 0) {
         //SMS Available, but do polling instead
-    } else if(strncmp(urc, "+HSMSCTX: ", 10) == 0) {
+    } else if(strncmp(urc, "+HHSMSCTX: ", 10) == 0) {
         int msglen = 0;
-        int numparams = sscanf(urc, "+HSMSCTX: \"%[^\"]\",\"%d/%d/%d,%d:%d:%d\",%d", sms_sender, &sms_dt.year, &sms_dt.month, &sms_dt.day, &sms_dt.hour, &sms_dt.minute, &sms_dt.second, &msglen);
+        int numparams = sscanf(urc, "+HHSMSCTX: \"%[^\"]\",\"%d/%d/%d,%d:%d:%d\",%d", sms_sender, &sms_dt.year, &sms_dt.month, &sms_dt.day, &sms_dt.hour, &sms_dt.minute, &sms_dt.second, &msglen);
         if(numparams == 8) {
             modem.rawRead(msglen, sms_message);
             sms_pending = true;
         }
-    } else if(strncmp(urc, "+HDISCONNECTED: ", 16) == 0) {
-        if(auto_reconnect) {
-            connect(true);
-        }
+    } else if(strncmp(urc, "+HHCONNECTED: ", 14) == 0) {
+        int con = 0;
         if(event_callback) {
-            event_callback(CLOUD_EVENT_DISCONNECTED);
+            if(sscanf(urc, "+HHCONNECTED: %d", &con) == 1) {
+                event_callback(con == 1 ? CLOUD_EVENT_CONNECTED : CLOUD_EVENT_DISCONNECTED);
+            }
         }
     } else if(strncmp(urc, "+HHREGISTERED: ", 15) == 0) {
         int status = 99;
@@ -126,16 +131,16 @@ void Hologram::onURC(const char* urc) {
                     event_callback(CLOUD_EVENT_REGISTERED);
             }
         }
-    } else if(strncmp(urc, "+HINFO: ", 8) == 0) {
-        protocol_version = 1;
-        modem_state = MODEM_STATE_READY;
     } else if(strncmp(urc, "+HHOLO: ", 8) == 0) {
         sscanf(urc, "+HHOLO: %d", &protocol_version);
         modem_state = MODEM_STATE_READY;
-    } else if(strncmp(urc, "+HSOCKACCEPT: ", 14) == 0) {
+        if(event_callback) {
+            event_callback(CLOUD_EVENT_RESET);
+        }
+    } else if(strncmp(urc, "+HHSOCKACCEPT: ", 14) == 0) {
         int id, port, listener;
         char host[16];
-        if(sscanf(urc, "+HSOCKACCEPT: %d,\"%[^\"]\",%d,%d", &id, host, &port, &listener) == 4) {
+        if(sscanf(urc, "+HHSOCKACCEPT: %d,\"%[^\"]\",%d,%d", &id, host, &port, &listener) == 4) {
             if(inbound_callback && inbound_buffer && inbound_length > 0 && inbound_pending == 0) {
                 inbound_pending = id;
             } else {
@@ -151,6 +156,13 @@ void Hologram::onURC(const char* urc) {
                 location_callback(loc_dt, loc_lat, loc_lon, altitude, uncertainty);
             }
         }
+    } else if(strncmp(urc, "+HHCHARGE: ", 11) == 0) {
+        int charge_state = 0;
+        if(sscanf(urc, "+HHCHARGE: %d", &charge_state) == 1) {
+            if(charge_callback) {
+                charge_callback((charge_status)(charge_state));
+            }
+        }
     }
 }
 
@@ -160,10 +172,11 @@ void Hologram::resetSystem() {
     Dash.snooze(10);
     pinMode(26, INPUT);
     Dash.snooze(50);
+    pinMode(26, DISABLE);
 }
 
 int Hologram::listen(int port) {
-    if(connect(true)) {
+    if(modem_state == MODEM_STATE_READY) {
         modem.startSet("+HSOCKLISTEN");
         modem.appendSet(port);
         if(modem.completeSet(10*1000) == MODEM_OK) {
@@ -173,7 +186,6 @@ int Hologram::listen(int port) {
             }
         }
     }
-    disconnect();
     return 0;
 }
 
@@ -207,40 +219,59 @@ int Hologram::read(int socket, void *buffer, int max_len, int timeout) {
 }
 
 void Hologram::close(int socket) {
-    modem.startSet("+HSOCKCLOSE");
-    modem.appendSet(socket);
-    modem.completeSet(3*1000);
+    if(modem_state == MODEM_STATE_READY) {
+        modem.startSet("+HSOCKCLOSE");
+        modem.appendSet(socket);
+        modem.completeSet(3*1000);
+    }
 }
 
-//blocking...
-bool Hologram::connect(bool reconnect) {
+bool Hologram::connect() {
     powerUp();
-    auto_reconnect = reconnect;
-    if(modem.command("+HCONNECT", 3*60*1000) == MODEM_OK) {
-        int status = CLOUD_ERR_UNAVAILABLE;
-        if(sscanf(modem.lastResponse(), "+HCONNECT: %d", &status) == 1) {
-            return status == CLOUD_CONNECTED;
-        }
-    }
-    return false;
+    return true;
 }
 
 bool Hologram::disconnect() {
-    powerUp();
-    auto_reconnect = false;
-    return modem.command("+HDISCONNECT", 30*1000) == MODEM_OK;
+    if(modem_state == MODEM_STATE_READY) {
+        if(modem.command("+HDISCONNECT", 30*1000) == MODEM_OK) {
+            modem_state = MODEM_STATE_DISCONNECTED;
+        }
+    }
+    return true;
+}
+
+bool Hologram::isConnected() {
+    return getConnectionStatus() == CLOUD_CONNECTED;
+}
+
+bool Hologram::isRegistered() {
+    int s = getConnectionStatus();
+    return (s == CLOUD_CONNECTED) || (s == CLOUD_REGISTERED);
 }
 
 int Hologram::getConnectionStatus() {
     int status = CLOUD_ERR_UNAVAILABLE;
-    powerUp();
-    if(modem.command("+HCONSTATUS") == MODEM_OK) {
-        sscanf(modem.lastResponse(), "+HCONSTATUS: %d", &status);
+    if(modem_state > MODEM_STATE_SHUTDOWN) {
+        if(modem.command("+HCONSTATUS") == MODEM_OK) {
+            sscanf(modem.lastResponse(), "+HCONSTATUS: %d", &status);
+        }
+        return status;
     }
-    return status;
+    return CLOUD_ERR_MODEM_OFF;
+}
+
+int Hologram::sendTimeout() {
+    return modem.command("+HDEBUGTIMEOUT");
+}
+
+int Hologram::sendDelay(bool ok, int milliseconds) {
+    modem.startSet(ok ? "+HDEBUGDELAY" : "+HDEBUGDELAYERR");
+    modem.appendSet(milliseconds);
+    return modem.completeSet();
 }
 
 int Hologram::getSignalStrength() {
+    if(modem_state == MODEM_STATE_DISCONNECTED) return 99;
     powerUp();
     if(modem.command("+CSQ") != MODEM_OK)
         return 99;
@@ -251,6 +282,7 @@ int Hologram::getSignalStrength() {
 }
 
 bool Hologram::getNetworkTime(rtc_datetime_t &dt) {
+    if(modem_state == MODEM_STATE_DISCONNECTED) return false;
     powerUp();
     if(modem.query("+CCLK") != MODEM_OK) {
         return false;
@@ -266,36 +298,88 @@ bool Hologram::getNetworkTime(rtc_datetime_t &dt) {
     return false;
 }
 
+bool Hologram::getUTC(rtc_datetime_t &dt) {
+    if(modem_state == MODEM_STATE_DISCONNECTED) return false;
+    powerUp();
+    if(modem.query("+CCLK") != MODEM_OK) {
+        return false;
+    }
+
+    int tz;
+    if(sscanf(modem.lastResponse(), "+CCLK: \"%d/%d/%d,%d:%d:%d%d", &dt.year, &dt.month, &dt.day, &dt.hour, &dt.minute, &dt.second, &tz) == 7) {
+        if(dt.year == 4) {
+            if(getSignalStrength() == 99)
+                return false;
+        }
+        dt.year += 2000;
+        uint32_t seconds = 0;
+        RTC_HAL_ConvertDatetimeToSecs(&dt, &seconds);
+        int tz_seconds = tz * 15 * 60;
+        if(tz_seconds < 0) {
+          seconds += (uint32_t)(abs(tz_seconds));
+        } else {
+          seconds -= tz_seconds;
+        }
+        RTC_HAL_ConvertSecsToDatetime(&seconds, &dt);
+        return true;
+    }
+    return false;
+}
+
+int Hologram::getChargeState() {
+    int charge = 8;
+    if(modem_state > MODEM_STATE_SHUTDOWN) {
+        if(modem.query("+HCHARGE") == MODEM_OK)
+            sscanf(modem.lastResponse(), "+HCHARGE: %d", &charge);
+    }
+    return charge;
+}
+
 String Hologram::systemVersion() {
     char ver[9];
     int value=0;
-    powerUp();
-    if(modem.set("+HSYS", "2") == MODEM_OK) {
-        if(sscanf(modem.lastResponse(), "+HSYS: %d,\"%[^\"]\"", &value, ver) == 2) {
-            if(value == 2)
-                return String(ver);
+    if(modem_state > MODEM_STATE_SHUTDOWN) {
+        if(modem.set("+HSYS", "2") == MODEM_OK) {
+            if(sscanf(modem.lastResponse(), "+HSYS: %d,\"%[^\"]\"", &value, ver) == 2) {
+                if(value == 2)
+                    return String(ver);
+            }
         }
     }
     return String("0.0.0");
 }
 
 String Hologram::getICCID() {
-    powerUp();
-    if(modem.query("+CCID") == MODEM_OK) {
-        if(strncmp(modem.lastResponse(), "+CCID: ", 7) == 0) {
-            return String(&(modem.lastResponse()[7]));
+    if(modem_state != MODEM_STATE_DISCONNECTED) {
+        powerUp();
+        if(modem.query("+CCID") == MODEM_OK) {
+            if(strncmp(modem.lastResponse(), "+CCID: ", 7) == 0) {
+                return String(&(modem.lastResponse()[7]));
+            }
+        }
+    }
+    return String("Not available");
+}
+
+String Hologram::getIMEI() {
+    if(modem_state != MODEM_STATE_DISCONNECTED) {
+        powerUp();
+        if(modem.command("+CIMI") == MODEM_OK) {
+            return String(&(modem.lastResponse()[0]));
         }
     }
     return String("Not available");
 }
 
 String Hologram::getNetworkOperator() {
-    powerUp();
-    if(modem.set("+UDOPN", "12") == MODEM_OK) {
-        if(strncmp(modem.lastResponse(), "+UDOPN: 12,\"", 12) == 0) {
-            String s = String(&(modem.lastResponse()[12]));
-            s.remove(s.length()-1);
-            return s;
+    if(modem_state != MODEM_STATE_DISCONNECTED) {
+        powerUp();
+        if(modem.set("+UDOPN", "12") == MODEM_OK) {
+            if(strncmp(modem.lastResponse(), "+UDOPN: 12,\"", 12) == 0) {
+                String s = String(&(modem.lastResponse()[12]));
+                s.remove(s.length()-1);
+                return s;
+            }
         }
     }
     return String("Not available");
@@ -304,12 +388,33 @@ String Hologram::getNetworkOperator() {
 bool Hologram::getLocation(int accuracy, int maxseconds) {
     //AT+ULOC=2,2,0,360,10
     //AT+HLOC=360,10
-    if(connect(auto_reconnect)) {
-        modem.startSet("+HLOC");
-        modem.appendSet(maxseconds);
-        modem.appendSet(",");
-        modem.appendSet(accuracy);
-        return modem.completeSet() == MODEM_OK;
+    if(modem_state == MODEM_STATE_DISCONNECTED) return false;
+    powerUp();
+    modem.startSet("+HLOC");
+    modem.appendSet(maxseconds);
+    modem.appendSet(",");
+    modem.appendSet(accuracy);
+    return modem.completeSet() == MODEM_OK;
+}
+
+bool Hologram::setRGB(String name) {
+    if(modem_state > MODEM_STATE_SHUTDOWN) {
+        return modem.set("+HRGBN", name.c_str()) == MODEM_OK;
+    }
+    return false;
+}
+
+bool Hologram::setRGB(int hexcode) {
+    if(modem_state > MODEM_STATE_SHUTDOWN) {
+        String h(hexcode, 16);
+        return modem.set("+HRGBH", h.c_str()) == MODEM_OK;
+    }
+    return false;
+}
+
+bool Hologram::setLED(bool on) {
+    if(modem_state > MODEM_STATE_SHUTDOWN) {
+        return modem.set("+HLED", on ? "1" : "0") == MODEM_OK;
     }
     return false;
 }
@@ -319,21 +424,23 @@ void Hologram::powerUp() {
     int delayinc = 0;
     if(modem_state == MODEM_STATE_READY) {
         return;
-    } else if(modem_state == MODEM_STATE_OFF) {
-        resetSystem();
-        Dash.snooze(3000);
+    } else if(modem_state == MODEM_STATE_SHUTDOWN) {
+        protocol_version = 0;
+        modem.command("", 150); //pulse an AT but don't expect a response
         modem_state = MODEM_STATE_UNKNOWN;
+    } else if(modem_state == MODEM_STATE_DISCONNECTED) {
+        if(modem.command("+HCONNECT") == MODEM_OK)
+            modem_state = MODEM_STATE_READY;
     }
-    while(1) {
+    while(protocol_version == 0) {
         modem.checkURC();
         if(modem.command("", 100, retries) != MODEM_OK) {
             resetSystem();
             Dash.snooze(1000+(delayinc*2000));
             retries *= 2;
             delayinc++;
-        }
-        if(protocol_version == 0) {
-            if(modem.query("+HOLO") == MODEM_OK) {
+        } else if(protocol_version == 0) {
+            if(modem.query("+HOLO", 100, 10) == MODEM_OK) {
                 sscanf(modem.lastResponse(), "+HOLO: %d", &protocol_version);
             } else {
                 resetSystem();
@@ -349,7 +456,7 @@ void Hologram::powerUp() {
 
 void Hologram::powerDown() {
     pollEvents();
-    modem_state = MODEM_STATE_OFF;
+    modem_state = MODEM_STATE_SHUTDOWN;
     modem.command("+HSHUTDOWN");
     protocol_version = 0;
 }
@@ -364,7 +471,7 @@ void Hologram::notifySMS() {
 
 void Hologram::pollEvents() {
     //check SMS pending...
-    if(ready && modem_state == MODEM_STATE_READY) {
+    if(ready) {
         notifySMS(); //clear any SMS already received
         modem.checkURC();
         checkIncoming();
@@ -419,9 +526,8 @@ void Hologram::resetBuffer() {
 
 bool Hologram::sendMessage() {
     message_attempted = false;
-
-    if(!connect(auto_reconnect))
-        return sendFinalize(false);
+    if(modem_state == MODEM_STATE_DISCONNECTED) return sendFinalize(false);;
+    powerUp();
 
     if(modem.command("+HMRST") != MODEM_OK)
         return sendFinalize(false);
@@ -500,3 +606,5 @@ bool Hologram::sendMessage(const uint8_t* content, uint32_t length, const char* 
         attachTopic(topic);
     return sendMessage(content, length);
 }
+
+ArduinoModem modem;

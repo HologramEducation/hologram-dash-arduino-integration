@@ -26,6 +26,11 @@
 
 void Modem::init(URCReceiver &receiver) {
     this->receiver = &receiver;
+    async_state = MODEM_OK;
+}
+
+uint32_t Modem::timeoutCount() {
+    return timeout_count;
 }
 
 const char* Modem::lastResponse() {
@@ -55,6 +60,8 @@ void Modem::appendSet(uint8_t *value, uint32_t len) {
 }
 
 modem_result Modem::intermediateSet(char expected, uint32_t timeout, uint32_t retries) {
+    checkURC();
+    if(async_state == MODEM_BUSY) return MODEM_BUSY;
     do {
         respbuffer[0] = 0;
         modemwrite(cmdbuffer, CMD_STARTAT);
@@ -79,13 +86,15 @@ modem_result Modem::intermediateSet(char expected, uint32_t timeout, uint32_t re
                     modemread();
                     return MODEM_OK;
                 } else if(c == '+') {
-                    checkURC();
+                    if(modemavailable() >= 2)
+                        checkURC();
                 } else {
                     modemread();
                 }
             }
         }
     }while(retries--);
+    timeout_count++;
     return MODEM_TIMEOUT;
 }
 
@@ -166,9 +175,21 @@ void Modem::modemwrite(const char* cmd, cmd_flags flags) {
 }
 
 void Modem::checkURC() {
+    if(async_state == MODEM_BUSY) {
+        modem_result r = processResponse(10, cmdbuffer);
+        if(r == MODEM_TIMEOUT) {
+            if(msTick() - async_start >= async_timeout) {
+                async_state = MODEM_TIMEOUT;
+            }
+        } else {
+            async_state = r;
+        }
+        return;
+    }
+
     while(modemavailable()) {
         uint32_t startMillis = msTick();
-        if(findline(okbuffer, 1000, startMillis)) {
+        if(findline(okbuffer, 100, startMillis)) {
             if(okbuffer[0] == '+') {
                 debugout("!URC: '");
                 debugout(okbuffer);
@@ -208,7 +229,7 @@ uint32_t Modem::numResponses() {
     return numresponses;
 }
 
-modem_result Modem::processResponse(uint32_t timeout, const char* cmd) {
+modem_result Modem::processResponse(uint32_t timeout, const char* cmd, int minResponses) {
     uint32_t startMillis = msTick();
     numresponses = 0;
     while(findline(okbuffer, timeout, startMillis)) {
@@ -222,9 +243,11 @@ modem_result Modem::processResponse(uint32_t timeout, const char* cmd) {
         } else if(strncmp(okbuffer, "+CMS ERROR:", 11) == 0) {
             strcpy(respbuffer, okbuffer);
             return MODEM_ERROR;
-        } else if(strcmp(okbuffer, "OK") == 0) {
+        } else if(strcmp(okbuffer, "OK") == 0 && numresponses >= minResponses) {
+            timeout_count = 0;
             return MODEM_OK;
         } else if(okbuffer[0] == '+') {
+            timeout_count = 0;
             if(commandResponseMatch(cmd, okbuffer, strlen(cmd))) {
                 numresponses++;
                 strcpy(respbuffer, okbuffer);
@@ -244,10 +267,13 @@ modem_result Modem::processResponse(uint32_t timeout, const char* cmd) {
             strcpy(respbuffer, okbuffer);
         }
     }
+    timeout_count++;
     return MODEM_TIMEOUT;
 }
 
 modem_result Modem::command(const char* cmd, const char* expected, uint32_t timeout, uint32_t retries, bool query) {
+    checkURC();
+    if(async_state == MODEM_BUSY) return MODEM_BUSY;
     modem_result r = MODEM_TIMEOUT;
     do {
         respbuffer[0] = 0;
@@ -272,7 +298,27 @@ modem_result Modem::command(const char* cmd, uint32_t timeout, uint32_t retries,
     return command(cmd, NULL, timeout, retries, query);
 }
 
+modem_result Modem::asyncStatus() {
+    return async_state;
+}
+
+modem_result Modem::asyncSet(const char* cmd, const char* value, uint32_t timeout) {
+    checkURC();
+    if(async_state == MODEM_BUSY) return MODEM_BUSY;
+    respbuffer[0] = 0;
+    strcpy(cmdbuffer, cmd);
+    modemwrite(cmd, CMD_STARTAT);
+    modemwrite("=");
+    modemwrite(value, CMD_END);
+    async_state = MODEM_BUSY;
+    async_timeout = timeout;
+    async_start = msTick();
+    return MODEM_OK;
+}
+
 modem_result Modem::set(const char* cmd, const char* value, const char* expected, uint32_t timeout, uint32_t retries) {
+    checkURC();
+    if(async_state == MODEM_BUSY) return MODEM_BUSY;
     modem_result r = MODEM_TIMEOUT;
     do {
         respbuffer[0] = 0;

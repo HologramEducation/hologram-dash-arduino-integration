@@ -417,7 +417,11 @@ void DashClass::stopTimer()
     PIT_HAL_ClearIntFlag(PIT, 2);
 }
 
-void DashClass::timerExpired(uint32_t source)
+bool DashClass::timerExpired() {
+    return !PIT_HAL_IsTimerRunning(PIT, 2);
+}
+
+void DashClass::timerExpiration(uint32_t source)
 {
     PIT_HAL_ClearIntFlag(PIT, source);
     if(timer_oneshot) {
@@ -425,6 +429,7 @@ void DashClass::timerExpired(uint32_t source)
     }
     if(timer_callback)
         timer_callback();
+    wakeFromSleep();
 }
 
 #ifdef __cplusplus
