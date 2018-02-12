@@ -21,6 +21,7 @@
 */
 
 #include "SerialCloud.h"
+#include "delay.h"
 
 extern Hologram HologramCloud;
 extern SerialCloudClass SerialCloud;
@@ -43,7 +44,19 @@ void SerialCloudClass::end() {
 size_t SerialCloudClass::write(uint8_t x) {
     size_t s = HologramCloud.write(x);
     if(x == '\n') {
-        HologramCloud.sendMessage();
+        while(!HologramCloud.isConnected()) {
+            delay(100);
+        }
+        bool success = false;
+        while(!success) {
+            success = HologramCloud.sendMessage();
+            if(success) {
+                store("+EVENT:MSGSENT\r\n");
+            } else {
+                delay(100);
+            }
+        }
+        
         HologramCloud.clear();
     }
     return s;

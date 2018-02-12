@@ -77,6 +77,7 @@ public:
     static uint8_t convertHex(const char* hex);
 
 protected:
+    #define URC_BUFFER_SIZE 256
     typedef enum {
         CMD_NONE  = 0x00,
         CMD_START = 0x01,
@@ -104,6 +105,14 @@ protected:
     int strncmpci(const char* str1, const char* str2, size_t num);
     bool commandResponseMatch(const char* cmd, const char* response, int num);
 
+    void pushURC(char c);
+    void pushURC(const char* urc);
+    int popURC();
+    int availableURC();
+    int remainingURC();
+    int nextSlotURC(int slot);
+    bool findlineURC(char *buffer);
+
     URCReceiver *receiver;
     char cmdbuffer[32];
     char valbuffer[48];
@@ -115,4 +124,7 @@ protected:
     uint32_t async_start;
     uint32_t async_timeout;
     uint32_t timeout_count;
+    char urc_buffer[URC_BUFFER_SIZE];
+    int urc_write;
+    int urc_read;
 };

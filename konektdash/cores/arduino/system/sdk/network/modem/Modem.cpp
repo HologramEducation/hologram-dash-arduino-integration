@@ -27,6 +27,8 @@
 void Modem::init(URCReceiver &receiver) {
     this->receiver = &receiver;
     async_state = MODEM_OK;
+    urc_read = 0;
+    urc_write = 0; 
 }
 
 uint32_t Modem::timeoutCount() {
@@ -78,8 +80,9 @@ modem_result Modem::intermediateSet(char expected, uint32_t timeout, uint32_t re
                     debugout("\\n");
                 } else if(c < 0x21 || c > 0x7E)
                     debugout((int)c);
-                else
+                else {
                     debugout(c);
+                }
                 debugout(">\r\n");
 
                 if(c == expected) {
@@ -139,8 +142,9 @@ bool Modem::findline(char *buffer, uint32_t timeout, uint32_t startMillis) {
         while(modemavailable()) {
             *rx = modemread();
             if(*rx == '\n') {
-                while(*rx == '\n' || *rx == '\r')
+                while(*rx == '\n' || *rx == '\r') {
                     *rx-- = 0;
+                }
                 debugout("{");
                 debugout(buffer);
                 debugout("}\r\n");
@@ -154,6 +158,79 @@ bool Modem::findline(char *buffer, uint32_t timeout, uint32_t startMillis) {
     debugout("{");
     debugout(buffer);
     debugout("}!\r\n");
+    return false;
+}
+
+
+void Modem::pushURC(char c)
+{
+  int slot = nextSlotURC(urc_write);
+  if(slot != urc_read)
+  {
+    urc_buffer[urc_write] = c;
+    urc_write = slot;
+  }
+}
+
+void Modem::pushURC(const char* urc) {
+    int len = strlen(urc);
+    if(len+1 > remainingURC()) {
+        return;
+    }
+    
+    for(int i=0;i<len;i++) {
+        pushURC(urc[i]);
+    }
+    pushURC('\n');
+}
+
+int Modem::popURC()
+{
+    if(urc_read == urc_write) {
+        return -1;
+    }
+
+    char c = urc_buffer[urc_read];
+    urc_read = nextSlotURC(urc_read);
+
+    return c;
+}
+
+int Modem::availableURC()
+{
+    int available = urc_write - urc_read;
+
+    if(available < 0) {
+        return URC_BUFFER_SIZE + available;
+    }
+    else {
+        return available;
+    }
+}
+
+int Modem::remainingURC() {
+    return URC_BUFFER_SIZE - availableURC() - 1;
+}
+
+int Modem::nextSlotURC(int slot)
+{
+    return (uint32_t)(slot + 1) % URC_BUFFER_SIZE;
+}
+
+bool Modem::findlineURC(char *buffer) {
+    char *rx = buffer;
+    while(availableURC()) {
+        *rx = popURC();
+        if(*rx == '\n') {
+            while(*rx == '\n' || *rx == '\r') {
+                *rx-- = 0;
+            }
+            return true;
+        } else {
+            rx++;
+        }
+    }
+    *rx = 0;
     return false;
 }
 
@@ -187,6 +264,14 @@ void Modem::checkURC() {
         return;
     }
 
+    while(availableURC()) {
+        if(findlineURC(okbuffer)) {
+            if(receiver) {
+                receiver->onURC(okbuffer);
+            }
+        }
+    }
+
     while(modemavailable()) {
         uint32_t startMillis = msTick();
         if(findline(okbuffer, 100, startMillis)) {
@@ -194,8 +279,9 @@ void Modem::checkURC() {
                 debugout("!URC: '");
                 debugout(okbuffer);
                 debugout("'\r\n");
-                if(receiver)
+                if(receiver) {
                     receiver->onURC(okbuffer);
+                }
             }
         }
     }
@@ -219,8 +305,9 @@ int Modem::strncmpci(const char* str1, const char* str2, size_t num) {
 
 bool Modem::commandResponseMatch(const char* cmd, const char* response, int num) {
     if(strncmpci(cmd, response, num) == 0) {
-        if(response[num] == ':' && response[num+1] == ' ')
+        if(response[num] == ':' && response[num+1] == ' ') {
             return true;
+        }
     }
     return false;
 }
@@ -255,8 +342,7 @@ modem_result Modem::processResponse(uint32_t timeout, const char* cmd, int minRe
                 debugout(">URC: '");
                 debugout(okbuffer);
                 debugout("'\r\n");
-                if(receiver)
-                    receiver->onURC(okbuffer);
+                pushURC(okbuffer);
             }
             startMillis = msTick();
         } else if(strncmp(okbuffer, "AT", 2) == 0 && strncmp(&okbuffer[2], cmd, strlen(cmd)) == 0) {
@@ -374,14 +460,16 @@ void Modem::rawRead(int length, void* buffer) {
     int read = 0;
     while(read < length && msTick() - startMillis < timeout) {
         if(modemavailable()) {
-            if(buffer)
+            if(buffer) {
                 pbuffer[read++] = modemread();
-            else
+            } else {
                 modemread();
+            }
         }
     }
-    if(buffer)
+    if(buffer) {
         pbuffer[read] = 0;
+    }
 }
 
 uint8_t Modem::convertHex(char hex) {

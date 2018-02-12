@@ -44,6 +44,7 @@
 #include "Wire.h"
 #include "Clock.h"
 #include "Hologram.h"
+#include "MCUFlash.h"
 #include "SerialCloud.h"
 
 extern Uart Serial0;
@@ -55,6 +56,7 @@ extern ClockClass Clock;
 extern Max1704x FuelGauge;
 extern DashCharger Charger;
 extern Hologram HologramCloud;
+extern MCUFlash DashFlash;
 extern SerialCloudClass SerialCloud;
 #define DashPro Dash
 

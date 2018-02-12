@@ -136,6 +136,8 @@ protected:
         MODEM_STATE_READY,
     }state_modem;
 
+    bool getTime(rtc_datetime_t &dt, bool utc);
+
     bool sendFinalize(bool success);
     void resetBuffer();
     void checkIncoming();

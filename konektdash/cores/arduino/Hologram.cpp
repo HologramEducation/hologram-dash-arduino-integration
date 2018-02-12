@@ -281,24 +281,7 @@ int Hologram::getSignalStrength() {
     return rssi;
 }
 
-bool Hologram::getNetworkTime(rtc_datetime_t &dt) {
-    if(modem_state == MODEM_STATE_DISCONNECTED) return false;
-    powerUp();
-    if(modem.query("+CCLK") != MODEM_OK) {
-        return false;
-    }
-    if(sscanf(modem.lastResponse(), "+CCLK: \"%d/%d/%d,%d:%d:%d", &dt.year, &dt.month, &dt.day, &dt.hour, &dt.minute, &dt.second) == 6) {
-        if(dt.year == 4) {
-            if(getSignalStrength() == 99)
-                return false;
-        }
-        dt.year += 2000;
-        return true;
-    }
-    return false;
-}
-
-bool Hologram::getUTC(rtc_datetime_t &dt) {
+bool Hologram::getTime(rtc_datetime_t &dt, bool utc) {
     if(modem_state == MODEM_STATE_DISCONNECTED) return false;
     powerUp();
     if(modem.query("+CCLK") != MODEM_OK) {
@@ -307,23 +290,32 @@ bool Hologram::getUTC(rtc_datetime_t &dt) {
 
     int tz;
     if(sscanf(modem.lastResponse(), "+CCLK: \"%d/%d/%d,%d:%d:%d%d", &dt.year, &dt.month, &dt.day, &dt.hour, &dt.minute, &dt.second, &tz) == 7) {
-        if(dt.year == 4) {
-            if(getSignalStrength() == 99)
-                return false;
+        if(dt.year == 4) { //good until 2104 and ublox-specfiic
+            return false;
         }
         dt.year += 2000;
-        uint32_t seconds = 0;
-        RTC_HAL_ConvertDatetimeToSecs(&dt, &seconds);
-        int tz_seconds = tz * 15 * 60;
-        if(tz_seconds < 0) {
-          seconds += (uint32_t)(abs(tz_seconds));
-        } else {
-          seconds -= tz_seconds;
+        if(utc) {
+            uint32_t seconds = 0;
+            RTC_HAL_ConvertDatetimeToSecs(&dt, &seconds);
+            int tz_seconds = tz * 15 * 60;
+            if(tz_seconds < 0) {
+              seconds += (uint32_t)(abs(tz_seconds));
+            } else {
+              seconds -= tz_seconds;
+            }
+            RTC_HAL_ConvertSecsToDatetime(&seconds, &dt);
         }
-        RTC_HAL_ConvertSecsToDatetime(&seconds, &dt);
         return true;
     }
     return false;
+}
+
+bool Hologram::getNetworkTime(rtc_datetime_t &dt) {
+    return getTime(dt, false);
+}
+
+bool Hologram::getUTC(rtc_datetime_t &dt) {
+    return getTime(dt, true);
 }
 
 int Hologram::getChargeState() {

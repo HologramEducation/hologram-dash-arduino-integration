@@ -23,6 +23,8 @@
 
 #include <ReadEvalPrint.h>
 
+#define DASH_REPL_VERSION "0.11.1"
+
 class DashReadEvalPrintLoop : public ReadEvalPrintLoop
 {
 public:

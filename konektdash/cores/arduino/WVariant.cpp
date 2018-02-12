@@ -134,6 +134,7 @@ Max1704x FuelGauge;
 DashCharger Charger(FuelGauge);
 Hologram HologramCloud;
 SerialCloudClass SerialCloud;
+MCUFlash DashFlash;
 
 #ifdef __cplusplus
 extern "C"
@@ -284,6 +285,7 @@ void wvariant_init(void)
     FuelGauge.init(WireInternal);
     FuelGauge.quickStart();
     Charger.beginAutoPercentage(20, 98);
+    DashFlash.begin();
     SerialSystem.begin(115200);
 #ifdef USE_HOLOGRAM_CLOUD
     HologramCloud.begin();

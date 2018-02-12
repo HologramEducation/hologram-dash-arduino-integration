@@ -47,9 +47,9 @@ void cloud_inbound(int length) {
 
 void cloud_notify(cloud_event e) {
   switch(e) {
-    case CLOUD_EVENT_DISCONNECTED:
-      //re-connect and re-open the server socket on port 4444
-      HologramCloud.listen(4444);
+    case CLOUD_EVENT_CONNECTED:
+      //re-open the server socket on port 4010
+      HologramCloud.listen(4010);
       break;
   }
 }
@@ -70,15 +70,19 @@ void setup() {
 
   HologramCloud.attachHandlerNotify(cloud_notify);
 
-  //Send a message to the Hologram Cloud with the topic "cloud_demo"
-  //Will connect to the Hologram Cloud automatically
-  HologramCloud.sendMessage("Hologram Cloud Demo Active", "cloud_demo");
+  while(!HologramCloud.isConnected()) {
+    Dash.snooze(1000);
+  }
 
   //sync clock with network time
   rtc_datetime_t dt;
   if(HologramCloud.getNetworkTime(dt)) {
     Clock.setDateTime(dt);
   }
+
+  //Send a message to the Hologram Cloud with the topic "cloud_demo"
+  //Will connect to the Hologram Cloud automatically
+  HologramCloud.sendMessage("Hologram Cloud Demo Active", "cloud_demo");
 }
 
 void loop() {
@@ -88,12 +92,12 @@ void loop() {
   //Set the Clock Alarm to wake the Dash up
   Clock.setAlarmMinutesFromNow(5);
 
-  //Explicitly connect to the Hologram Cloud
-  //This is optional because calling sendMessage() will connect as needed
-  HologramCloud.connect();
+  while(!HologramCloud.isConnected()) {
+    Dash.snooze(1000);
+  }
 
-  //Open a server socket on port 4444 to receive messages
-  HologramCloud.listen(4444);
+  //Open a server socket on port 4010 to receive messages
+  HologramCloud.listen(4010);
 
   //Buffer a message to send to the Hologram Cloud
   HologramCloud.print("A01: ");

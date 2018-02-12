@@ -220,9 +220,10 @@ static const ReadEvalPrintCommand MODEM[] = {
     {3, 0, "send a query to the modem",                 "modem", "query", "<command>"},             //1
     {4, 0, "set a value on the modem",                  "modem", "set", "<command>", "<value>"},    //2
     {3, 0, "enter passthrough mode if command is 1",    "modem", "passthrough", "<command>"},       //3
-    {2, 0, "no response",                               "debug", "timeout"},
-    {3, 0, "OK response after delay",                   "debug", "delay", "<value>"},
-    {3, 0, "ERROR response after delay",                "debug", "delayerr", "<value>"},
+    {2, 0, "no response",                               "debug", "timeout"},                        //4
+    {3, 0, "OK response after delay",                   "debug", "delay", "<value>"},               //5
+    {3, 0, "ERROR response after delay",                "debug", "delayerr", "<value>"},            //6
+    {4, 0, "read memory",                               "mem", "read", "<address>", "<size>"},      //7
 };
 
 const ReadEvalPrintCommand* DashModemProvider::getTable(uint32_t *num_commands)
@@ -310,6 +311,21 @@ bool DashModemProvider::event(ReadEvalPrintEvent &event, Print &port)
             event.tolong(2, &to);
             int ret = HologramCloud.sendDelay(false, to);
             port.println(ret);
+        }
+        break;
+    case 7:
+        {
+            int address, size;
+            event.tolong(2, &address);
+            event.tolong(3, &size);
+            
+            for(int i=0; i<size; i++) {
+                uint8_t b = *(uint8_t*)(address+i);
+                if(b < 0x10) port.write('0');
+                port.print(b, HEX);
+                port.write(' ');
+            }
+            port.println();
         }
         break;
     default:
@@ -413,9 +429,16 @@ bool DashLEDProvider::event(ReadEvalPrintEvent &event, Print &port)
 }
 
 static const ReadEvalPrintCommand FUNCTIONS[] = {
-    {2, 0, "go into Deep Sleep",                    "dash", "deepsleep"},
-    {2, 0, "go into Shutdown",                      "dash", "shutdown"},
-    {3, 0, "boot version number",                   "dash", "boot", "version"},
+    {2, 0, "go into Deep Sleep",                    "dash", "deepsleep"},                           //0
+    {2, 0, "go into Shutdown",                      "dash", "shutdown"},                            //1
+    {3, 0, "boot version number",                   "dash", "boot", "version"},                     //2
+    {2, 0, "Dash repl version",                     "repl", "version"},                             //3
+    {3, 0, "erase entire data flash",               "flash", "erase", "all"},                       //4
+    {3, 0, "erase 4096-byte flash sector",          "flash", "erase", "<address>"},                 //5
+    {4, 0, "read flash",                            "flash", "read", "<address>", "<size>"},        //6
+    {4, 7, "write up to 8 hex bytes to flash",      "flash", "write", "<address>", "<hex>"},        //7
+    {3, 0, "print string from flash",               "flash", "print", "<address>"},                 //8
+    {4, 0, "write string to flash",                 "flash", "string", "<address>", "<string>"},    //9
 };
 
 const ReadEvalPrintCommand* DashFunctionsProvider::getTable(uint32_t *num_commands)
@@ -435,6 +458,82 @@ bool DashFunctionsProvider::event(ReadEvalPrintEvent &event, Print &port)
         break;
     case 2:
         port.println(Dash.bootVersion());
+        break;
+    case 3:
+        port.print("Dash REPL version ");
+        port.println(DASH_REPL_VERSION);
+        break;
+    case 4:
+        port.print("Erasing data flash...");
+        port.println(DashFlash.eraseAll() == true ? "Complete" : "Failed");
+        break;
+    case 5:
+        {
+            port.print("Erasing sector...");
+            int address;
+            event.tolong(2, &address);
+            port.println(DashFlash.eraseSector(address) == true ? "Complete" : "Failed");
+        }
+        break;
+    case 6: //read flash hex
+        {
+            int address, size;
+            event.tolong(2, &address);
+            event.tolong(3, &size);
+            if(!DashFlash.beginRead(address)) return event.invalidParameter(2);
+            
+            for(int i=0; i<size; i++) {
+                uint8_t b = DashFlash.continueRead();
+                if(b < 0x10) port.write('0');
+                port.print(b, HEX);
+                port.write(' ');
+            }
+            port.println();
+        }
+        break;
+    case 7: //write flash hex
+        {
+            int address;
+            event.tolong(2, &address);
+            if(!DashFlash.beginWrite(address)) return event.invalidParameter(2);
+            int count = event.numArguments() - 3;
+            for(int i=0; i<count; i++) {
+                uint8_t data;
+                if(sscanf(event.getArgument(3+i), "%x", &data) == 1) {
+                    DashFlash.continueWrite(data);
+                }
+                else {
+                    return event.invalidParameter(i+3);
+                }
+            }
+            DashFlash.endWrite();
+            port.println("Complete");
+        }
+        break;
+    case 8: //print flash
+        {
+            int address;
+            event.tolong(2, &address);
+            if(!DashFlash.beginRead(address)) return event.invalidParameter(2);
+            
+            while(true) {
+                uint8_t c = DashFlash.continueRead();
+                if(c < 0x20 || c >= 0x7F) break;
+                port.print((char)c);
+            }
+            port.println();
+        }
+        break;
+    case 9: //write string to flash
+        {
+            int address;
+            event.tolong(2, &address);
+            const char* str = event.getArgument(3);
+            if(DashFlash.writeString(address, str))
+                port.println("Complete");
+            else
+                port.println("Failed");
+        }
         break;
     default:
         return false;

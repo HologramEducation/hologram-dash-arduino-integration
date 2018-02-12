@@ -21,7 +21,7 @@ dash.build.variant_system_lib=
 dash.compiler.c.elf.extra_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16
 dash.upload.tool=konektloader
 dash.upload.flags=
-dash.upload.maximum_size=1014764
+dash.upload.maximum_size=719872
 dash.menu.cpu_speed.speed48.build.clock_setup=-DCLOCK_SETUP=0
 dash.menu.cpu_speed.speed100.build.clock_setup=-DCLOCK_SETUP=1
 dash.menu.cpu_speed.speed120.build.clock_setup=-DCLOCK_SETUP=2
@@ -51,7 +51,7 @@ dashpro.build.variant_system_lib=
 dashpro.compiler.c.elf.extra_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16
 dashpro.upload.tool=konektloader
 dashpro.upload.flags=
-dashpro.upload.maximum_size=1014764
+dashpro.upload.maximum_size=719872
 dashpro.menu.cpu_speed.speed48.build.clock_setup=-DCLOCK_SETUP=0
 dashpro.menu.cpu_speed.speed100.build.clock_setup=-DCLOCK_SETUP=1
 dashpro.menu.cpu_speed.speed120.build.clock_setup=-DCLOCK_SETUP=2
@@ -80,7 +80,7 @@ dashpro_beta.build.variant_system_lib=
 dashpro_beta.compiler.c.elf.extra_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16
 dashpro_beta.upload.tool=konektloader
 dashpro_beta.upload.flags=
-dashpro_beta.upload.maximum_size=1014764
+dashpro_beta.upload.maximum_size=719872
 dashpro_beta.menu.cpu_speed.speed48.build.clock_setup=-DCLOCK_SETUP=0
 dashpro_beta.menu.cpu_speed.speed100.build.clock_setup=-DCLOCK_SETUP=1
 dashpro_beta.menu.cpu_speed.speed120.build.clock_setup=-DCLOCK_SETUP=2
